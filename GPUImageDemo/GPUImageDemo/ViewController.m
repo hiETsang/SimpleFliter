@@ -8,7 +8,6 @@
 
 #import "ViewController.h"
 #import "GPUImage.h"
-#import "GPUImageBeautifyFilter.h"
 #import "FWApplyFilter.h"
 #import "TZImagePickerController.h"
 

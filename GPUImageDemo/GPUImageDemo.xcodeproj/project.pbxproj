@@ -388,8 +388,7 @@
 				71BD91B71FC7F29D00BF7D09 /* FWFiveInputFilter.m */,
 				71BD91B81FC7F29D00BF7D09 /* FWSutroFilter.m */,
 			);
-			name = "Custom Filters";
-			path = "../../../../Downloads/openApp-master/FWMeituApp/FWMeituApp/Custom Filters";
+			path = "Custom Filters";
 			sourceTree = "<group>";
 		};
 		71BD92261FC7FE8100BF7D09 /* FILTERSIMAGE */ = {
@@ -474,8 +473,7 @@
 				71BD92971FC7FFCF00BF7D09 /* TZGifPhotoPreviewController.m */,
 				71BD92981FC7FFCF00BF7D09 /* TZProgressView.h */,
 			);
-			name = TZImagePickerController;
-			path = "../../../Downloads/TZImagePickerController-master/TZImagePickerController/TZImagePickerController";
+			path = TZImagePickerController;
 			sourceTree = "<group>";
 		};
 		71BD92A81FC8034B00BF7D09 /* images */ = {
