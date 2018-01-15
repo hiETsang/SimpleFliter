@@ -178,7 +178,6 @@
     // Dispose of any resources that can be recreated.
 }
 
-
 //修正图片方向
 - (UIImage *)fixOrientation:(UIImage *)aImage {
     
