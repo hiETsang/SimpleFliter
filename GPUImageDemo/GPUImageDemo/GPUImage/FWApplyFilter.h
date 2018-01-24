@@ -102,14 +102,5 @@
 
 //磨皮美颜
 +  (UIImage *)applyBeautifyFilter:(UIImage *)image;
-/**
- GPUImageGaussianBlurFilter
- GPUImageBoxBlurFilter
- GPUImageGaussianSelectiveBlurFilter
- GPUImageiOSBlurFilter
- GPUImageMotionBlurFilter
- GPUImageZoomBlurFilter
- */
-
 
 @end

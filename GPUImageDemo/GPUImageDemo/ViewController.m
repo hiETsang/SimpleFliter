@@ -11,6 +11,8 @@
 #import "FWApplyFilter.h"
 #import "TZImagePickerController.h"
 
+#import "CameraViewController.h"
+
 @interface ViewController ()
 @property (weak, nonatomic) IBOutlet UIImageView *testImageView;
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -163,9 +165,14 @@
     [tz setDidFinishPickingPhotosHandle:^(NSArray<UIImage *> *photos, NSArray *assets, BOOL isSelectOriginalPhoto) {
         weakSelf.orginImage = [weakSelf fixOrientation:photos[0]];
         weakSelf.testImageView.image = weakSelf.orginImage;
-            weakSelf.index = 0;
+        weakSelf.index = 0;
     }];
     [self presentViewController:tz animated:YES completion:nil];
+}
+
+- (IBAction)nextPage:(id)sender {
+    CameraViewController *vc = [[CameraViewController alloc] init];
+    [self presentViewController:vc animated:YES completion:nil];
 }
 
 - (IBAction)beatuyFace:(id)sender {
