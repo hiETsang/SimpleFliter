@@ -38,6 +38,38 @@ typedef enum : NSUInteger {
 } LVSimpleCameraErrorCode;
 
 @interface LVCaptureController : UIViewController
+
+#pragma mark - 初始化
+
+/**
+ 初始化函数
+ @param quality 输出图片质量
+ @param position 摄像头位置
+ @param recordingEnabled 是否需要录像
+ @return LVCaptureController
+ */
+-(instancetype) initWithQuality:(NSString *)quality position:(LVCapturePosition)position enableRecording:(BOOL)recordingEnabled;
+
+-(instancetype) initWithQuality:(NSString *)quality position:(LVCapturePosition)position;
+
+-(instancetype) initWithQuality:(NSString *)quality;
+
+/**
+ 设置预览图层的位置
+ 
+ @param vc 展示的VC
+ @param frame 位置区域
+ */
+- (void)attachToViewController:(UIViewController *)vc withFrame:(CGRect)frame;
+
+//开始会话
+-(void)start;
+
+//停止会话
+-(void)stop;
+
+#pragma mark - 相机配置
+
 /**
  返回错误信息
  */
@@ -56,7 +88,7 @@ typedef enum : NSUInteger {
 @property (nonatomic ,readonly) LVCaptureFlash flash;
 
 //镜像        Default：LVCaptureMirrorAuto
-@property (nonatomic ,assign) LVCaptureMirror mirror;
+//@property (nonatomic ,assign) LVCaptureMirror mirror;
 
 //是否允许缩放 Default：YES
 @property (nonatomic ,assign ,getter=isZoomingEnabled) BOOL zoomingEnabled;
@@ -69,30 +101,17 @@ typedef enum : NSUInteger {
 
 /**
  切换摄像头
-
  @return 当前摄像头
  */
 -(LVCapturePosition)changePosition;
 
-/**
- 初始化函数
- 
- @param quality 输出图片质量
- @param position 摄像头位置
- @param recordingEnabled 是否需要录像
- @return LVCaptureController
- */
--(instancetype) initWithQuality:(NSString *)quality position:(LVCapturePosition)position enableRecording:(BOOL)recordingEnabled;
+//更新闪光灯模式
+- (BOOL)updateFlashMode:(LVCaptureFlash)cameraFlash;
 
--(instancetype) initWithQuality:(NSString *)quality position:(LVCapturePosition)position;
+//点击聚焦图层和聚焦动画
+-(void)clickFocusBox:(CALayer *)layer animation:(CAAnimation *)animation;
 
--(instancetype) initWithQuality:(NSString *)quality;
-
-//开始会话
--(void)start;
-
-//停止会话
--(void)stop;
+#pragma mark - 拍照
 
 /**
  拍照
@@ -105,7 +124,7 @@ typedef enum : NSUInteger {
 -(void)capture:(void (^)(LVCaptureController *camera, UIImage *image, NSError *error))onCapture exactSeenImage:(BOOL)exactSeenImage;
 -(void)capture:(void (^)(LVCaptureController *camera, UIImage *image, NSError *error))onCapture;
 
-//---------------视频---------------
+#pragma mark - 视频
 
 //是否可以录制
 @property (nonatomic ,assign ,getter=isRecordingEnabled) BOOL recordingEnabled;
@@ -124,19 +143,13 @@ typedef enum : NSUInteger {
 //停止录制
 - (void)stopRecording;
 
-/**
- 设置预览图层的位置
 
- @param vc 展示的VC
- @param frame 位置区域
- */
-- (void)attachToViewController:(UIViewController *)vc withFrame:(CGRect)frame;
 
-//更新闪光灯模式
-- (BOOL)updateFlashMode:(LVCaptureFlash)cameraFlash;
+#pragma mark - 人脸识别
 
-//点击聚焦图层和聚焦动画
--(void)clickFocusBox:(CALayer *)layer animation:(CAAnimation *)animation;
+#pragma mark - 美颜滤镜
+
+#pragma mark - 权限
 
 //闪光灯是否可用
 - (BOOL)isFlashAvailable;

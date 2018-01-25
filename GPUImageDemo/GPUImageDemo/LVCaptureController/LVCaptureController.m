@@ -80,7 +80,7 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     _position = position;
     _recordingEnabled = recordingEnabled;
     _flash = LVCaptureFlashOff;
-    _mirror = LVCaptureMirrorAuto;
+//    _mirror = LVCaptureMirrorAuto;
     _whiteBalanceMode = AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance;
     _useDeviceOrientation = YES;
     _tapToFocus = NO;
@@ -183,9 +183,8 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
                 break;
         }
         _videoCamera = [[GPUImageStillCamera alloc] initWithSessionPreset:self.cameraQuality cameraPosition:devicePosition];
-        _videoCamera.outputImageOrientation = UIInterfaceOrientationPortrait;   //输出图片方向
+        _videoCamera.outputImageOrientation = (NSInteger)[self orientationForConnection];   //输出图片方向
         _videoCamera.horizontallyMirrorFrontFacingCamera = YES; //前置相机是否镜像
-//        _videoCamera.inputCamera.focusMode = AVCaptureFocusModeContinuousAutoFocus;
         
         self.filter = [[GPUImageFilter alloc] init];
         
@@ -482,7 +481,7 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     }
 }
 
-#pragma mark - Focus
+#pragma mark - 聚焦
 - (void)addDefaultFocusBox
 {
     CALayer *focusBox = [[CALayer alloc] init];
@@ -502,6 +501,7 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     
     [self clickFocusBox:focusBox animation:focusBoxAnimation];
 }
+
 -(void)clickFocusBox:(CALayer *)layer animation:(CAAnimation *)animation
 {
     self.focusBoxLayer = layer;
@@ -550,7 +550,7 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     }
 }
 
-#pragma mark - setter
+#pragma mark - 白平衡
 
 -(void)setWhiteBalanceMode:(AVCaptureWhiteBalanceMode)whiteBalanceMode
 {
@@ -610,6 +610,7 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
 //    return;
 //}
 
+#pragma mark - 摄像头转换
 - (void)setCameraPosition:(LVCapturePosition)cameraPosition
 {
     if (_position == cameraPosition || !self.videoCamera.captureSession) {
@@ -632,60 +633,9 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
         [self.videoCamera rotateCamera];
     }
     _position = cameraPosition;
-    
-//    //开始配置
-//    [self.session beginConfiguration];
-//
-//    //移除原始数据输入对象
-//    [self.session removeInput:self.videoDeviceInput];
-//
-//    //获取新的数据输入对象
-//    AVCaptureDevice *device = nil;
-//    //如果当前的输入设备是后置摄像头 那么获取前置摄像头
-//    if (self.videoDeviceInput.device.position == AVCaptureDevicePositionBack) {
-//        device = [self cameraWithPosition:AVCaptureDevicePositionFront];
-//    }else
-//    {
-//        device = [self cameraWithPosition:AVCaptureDevicePositionBack];
-//    }
-//
-//    if (!device) {
-//        return;
-//    }
-//
-//    NSError *error = nil;
-//    AVCaptureDeviceInput *videoInput = [[AVCaptureDeviceInput alloc] initWithDevice:device error:&error];
-//    if(error) {
-//        [self passError:error];
-//        [self.session commitConfiguration];
-//        return;
-//    }
-//
-//    _position = cameraPosition;
-//
-//    if ([self.session canAddInput:videoInput]) {
-//        [self.session addInput:videoInput];
-//    }
-//    [self.session commitConfiguration];
-//    self.videoCaptureDevice = device;
-//    self.videoDeviceInput = videoInput;
-//
-//    [self setMirror:_mirror];
 }
 
-#pragma mark - getter
--(BOOL)isFlashAvailable
-{
-    return self.videoCamera.inputCamera.hasFlash && self.videoCamera.inputCamera.isFlashAvailable;
-}
-
--(BOOL)isTorchAvailable
-{
-    return self.videoCamera.inputCamera.hasTorch && self.videoCamera.inputCamera.isTorchAvailable;
-}
-
-#pragma mark - Other
- - (LVCapturePosition)changePosition
+- (LVCapturePosition)changePosition
 {
     if (!self.videoCamera.inputCamera) {
         return self.position;
@@ -699,6 +649,17 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     }
     
     return self.position;
+}
+
+#pragma mark - 闪光灯
+-(BOOL)isFlashAvailable
+{
+    return self.videoCamera.inputCamera.hasFlash && self.videoCamera.inputCamera.isFlashAvailable;
+}
+
+-(BOOL)isTorchAvailable
+{
+    return self.videoCamera.inputCamera.hasTorch && self.videoCamera.inputCamera.isTorchAvailable;
 }
 
 //更新闪光灯模式
@@ -734,6 +695,8 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
         return NO;
     }
 }
+
+#pragma mark - other
 
 - (void)passError:(NSError *)error
 {
