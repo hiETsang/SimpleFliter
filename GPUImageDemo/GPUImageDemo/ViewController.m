@@ -11,7 +11,8 @@
 #import "FWApplyFilter.h"
 #import "TZImagePickerController.h"
 
-#import "CameraViewController.h"
+//#import "CameraViewController.h"
+#import "TestViewController.h"
 
 @interface ViewController ()
 @property (weak, nonatomic) IBOutlet UIImageView *testImageView;
@@ -53,6 +54,7 @@
             break;
             
         case 2:
+            //流年
             self.currentImage = [FWApplyFilter applySoftEleganceFilter:self.orginImage];
             break;
             
@@ -171,7 +173,7 @@
 }
 
 - (IBAction)nextPage:(id)sender {
-    CameraViewController *vc = [[CameraViewController alloc] init];
+    TestViewController *vc = [[TestViewController alloc] init];
     [self presentViewController:vc animated:YES completion:nil];
 }
 

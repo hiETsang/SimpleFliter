@@ -10,22 +10,15 @@
 #import "GPUImageBeautifyFilter.h"
 #import "GPUImage.h"
 #import "UIImage+X.h"
+#import "LFGPUImageBeautyFilter.h"
 
 /***  当前屏幕宽度 */
 #define kScreenWidth  [[UIScreen mainScreen] bounds].size.width
 /***  当前屏幕高度 */
 #define kScreenHeight  [[UIScreen mainScreen] bounds].size.height
 
-typedef NS_ENUM(NSUInteger, FaceDirectionType) {
-    FaceDirectionTypeUp,
-    FaceDirectionTypeDown,
-    FaceDirectionTypeLeft,
-    FaceDirectionTypeRight
-};
-
 @interface CameraViewController ()<GPUImageVideoCameraDelegate>
-
-@property (nonatomic, strong) GPUImageVideoCamera *videoCamera;
+@property(nonatomic, strong) GPUImageStillCamera *videoCamera;
 @property (nonatomic, strong) GPUImageView *filterView;
 @property (nonatomic, strong) UIButton *beautifyButton;
 
@@ -40,7 +33,7 @@ typedef NS_ENUM(NSUInteger, FaceDirectionType) {
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPresetMedium cameraPosition:AVCaptureDevicePositionFront];
+    self.videoCamera = [[GPUImageStillCamera alloc] initWithSessionPreset:AVCaptureSessionPresetMedium cameraPosition:AVCaptureDevicePositionFront];
     self.videoCamera.delegate = self;
     self.videoCamera.outputImageOrientation = UIInterfaceOrientationPortrait;
     self.videoCamera.horizontallyMirrorFrontFacingCamera = YES;
@@ -64,13 +57,16 @@ typedef NS_ENUM(NSUInteger, FaceDirectionType) {
     [self.view addSubview:self.currentImageView];
     
     self.openDetection = YES;
+    
 }
 
 - (void)beautify {
     if (self.beautifyButton.selected) {
         self.beautifyButton.selected = NO;
         [self.videoCamera removeAllTargets];
-        [self.videoCamera addTarget:self.filterView];
+        LFGPUImageBeautyFilter *filter = [[LFGPUImageBeautyFilter alloc] init];
+        [self.videoCamera addTarget:filter];
+        [filter addTarget:self.filterView];
     }
     else {
         self.beautifyButton.selected = YES;

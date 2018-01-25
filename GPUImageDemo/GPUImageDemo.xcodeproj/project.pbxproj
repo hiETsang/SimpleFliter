@@ -16,6 +16,8 @@
 		71198E331FC7C7ED000F3C8E /* GPUImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 71198D7A1FC7C777000F3C8E /* GPUImage.framework */; };
 		71198E351FC7C8B0000F3C8E /* GPUImage.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 71198D7A1FC7C777000F3C8E /* GPUImage.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		71198E3E1FC7EBD2000F3C8E /* GPUImageBeautifyFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 71198E3D1FC7EBD2000F3C8E /* GPUImageBeautifyFilter.m */; };
+		7145529C2019D0CC00500FFB /* LVCaptureController.m in Sources */ = {isa = PBXBuildFile; fileRef = 714552982019D0CB00500FFB /* LVCaptureController.m */; };
+		714552A72019FE0700500FFB /* TestViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 714552A62019FE0700500FFB /* TestViewController.m */; };
 		717903B720185F0300212571 /* LFGPUImageBeautyFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 717903B620185F0300212571 /* LFGPUImageBeautyFilter.m */; };
 		717903BA20186D8A00212571 /* CameraViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 717903B920186D8A00212571 /* CameraViewController.m */; };
 		7179040E20188CC600212571 /* UINavigationController+X.m in Sources */ = {isa = PBXBuildFile; fileRef = 717903C420188CC600212571 /* UINavigationController+X.m */; };
@@ -185,6 +187,10 @@
 		71198D711FC7C777000F3C8E /* GPUImage.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = GPUImage.xcodeproj; sourceTree = "<group>"; };
 		71198E3C1FC7EBD2000F3C8E /* GPUImageBeautifyFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPUImageBeautifyFilter.h; sourceTree = "<group>"; };
 		71198E3D1FC7EBD2000F3C8E /* GPUImageBeautifyFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPUImageBeautifyFilter.m; sourceTree = "<group>"; };
+		714552982019D0CB00500FFB /* LVCaptureController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LVCaptureController.m; sourceTree = "<group>"; };
+		714552992019D0CB00500FFB /* LVCaptureController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LVCaptureController.h; sourceTree = "<group>"; };
+		714552A52019FE0700500FFB /* TestViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestViewController.h; sourceTree = "<group>"; };
+		714552A62019FE0700500FFB /* TestViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestViewController.m; sourceTree = "<group>"; };
 		717903B320185F0300212571 /* LFGPUImageBeautyFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFGPUImageBeautyFilter.h; sourceTree = "<group>"; };
 		717903B620185F0300212571 /* LFGPUImageBeautyFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFGPUImageBeautyFilter.m; sourceTree = "<group>"; };
 		717903B820186D8A00212571 /* CameraViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CameraViewController.h; path = GPUImageDemo/CameraViewController.h; sourceTree = SOURCE_ROOT; };
@@ -413,12 +419,15 @@
 				71198BEB1FC7BC52000F3C8E /* ViewController.m */,
 				717903B820186D8A00212571 /* CameraViewController.h */,
 				717903B920186D8A00212571 /* CameraViewController.m */,
+				714552972019D0CB00500FFB /* LVCaptureController */,
 				71198BED1FC7BC52000F3C8E /* Main.storyboard */,
 				71198BF01FC7BC52000F3C8E /* Assets.xcassets */,
 				71198BF21FC7BC52000F3C8E /* LaunchScreen.storyboard */,
 				71198BF51FC7BC52000F3C8E /* Info.plist */,
 				71198BF61FC7BC52000F3C8E /* main.m */,
 				71BD927B1FC7FFCF00BF7D09 /* TZImagePickerController */,
+				714552A52019FE0700500FFB /* TestViewController.h */,
+				714552A62019FE0700500FFB /* TestViewController.m */,
 			);
 			path = GPUImageDemo;
 			sourceTree = "<group>";
@@ -449,6 +458,15 @@
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		714552972019D0CB00500FFB /* LVCaptureController */ = {
+			isa = PBXGroup;
+			children = (
+				714552992019D0CB00500FFB /* LVCaptureController.h */,
+				714552982019D0CB00500FFB /* LVCaptureController.m */,
+			);
+			path = LVCaptureController;
 			sourceTree = "<group>";
 		};
 		717903BE20188CC600212571 /* XExpand */ = {
@@ -946,6 +964,7 @@
 				71BD929E1FC7FFCF00BF7D09 /* UIView+Layout.m in Sources */,
 				7179041E20188CC600212571 /* NSTimer+X.m in Sources */,
 				7179042A20188CC600212571 /* AnimatedGIFImageSerialization.m in Sources */,
+				714552A72019FE0700500FFB /* TestViewController.m in Sources */,
 				71BD92A11FC7FFCF00BF7D09 /* TZProgressView.m in Sources */,
 				7179042220188CC600212571 /* NSData+X.m in Sources */,
 				717903B720185F0300212571 /* LFGPUImageBeautyFilter.m in Sources */,
@@ -955,6 +974,7 @@
 				7179042320188CC600212571 /* NSArray+X.m in Sources */,
 				7179041020188CC600212571 /* UITextView+X.m in Sources */,
 				7179040E20188CC600212571 /* UINavigationController+X.m in Sources */,
+				7145529C2019D0CC00500FFB /* LVCaptureController.m in Sources */,
 				71BD91BB1FC7F29D00BF7D09 /* FWWaldenFilter.m in Sources */,
 				7179042720188CC600212571 /* XSILabel.m in Sources */,
 				71BD91BD1FC7F29D00BF7D09 /* FWRiseFilter.m in Sources */,

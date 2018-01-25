@@ -8,6 +8,7 @@
 
 #import "GPUImage.h"
 
+//美颜效果1  比较的亮
 @class GPUImageCombinationFilter;
 
 @interface GPUImageBeautifyFilter : GPUImageFilterGroup {
