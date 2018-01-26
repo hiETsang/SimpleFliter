@@ -413,21 +413,21 @@
 			children = (
 				717903BE20188CC600212571 /* XExpand */,
 				71198BFE1FC7C776000F3C8E /* GPUImage */,
+				714552972019D0CB00500FFB /* LVCaptureController */,
 				71198BE71FC7BC52000F3C8E /* AppDelegate.h */,
 				71198BE81FC7BC52000F3C8E /* AppDelegate.m */,
 				71198BEA1FC7BC52000F3C8E /* ViewController.h */,
 				71198BEB1FC7BC52000F3C8E /* ViewController.m */,
 				717903B820186D8A00212571 /* CameraViewController.h */,
 				717903B920186D8A00212571 /* CameraViewController.m */,
-				714552972019D0CB00500FFB /* LVCaptureController */,
+				714552A52019FE0700500FFB /* TestViewController.h */,
+				714552A62019FE0700500FFB /* TestViewController.m */,
 				71198BED1FC7BC52000F3C8E /* Main.storyboard */,
 				71198BF01FC7BC52000F3C8E /* Assets.xcassets */,
 				71198BF21FC7BC52000F3C8E /* LaunchScreen.storyboard */,
 				71198BF51FC7BC52000F3C8E /* Info.plist */,
 				71198BF61FC7BC52000F3C8E /* main.m */,
 				71BD927B1FC7FFCF00BF7D09 /* TZImagePickerController */,
-				714552A52019FE0700500FFB /* TestViewController.h */,
-				714552A62019FE0700500FFB /* TestViewController.m */,
 			);
 			path = GPUImageDemo;
 			sourceTree = "<group>";

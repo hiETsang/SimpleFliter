@@ -7,18 +7,22 @@
 //
 
 #import "LVCaptureController.h"
-#import "GPUImage.h"
+#import "LFGPUImageBeautyFilter.h"//美颜效果1  柔光
+#import "GPUImageBeautifyFilter.h"//美颜效果2  磨皮
+#import "FWNashvilleFilter.h"
 
 typedef void(^PropertyChangeBlock)(AVCaptureDevice *captureDevice);
 
 @interface LVCaptureController ()<UIGestureRecognizerDelegate,GPUImageVideoCameraDelegate,GPUImageMovieWriterDelegate>
 
-@property(nonatomic, strong) GPUImageStillCamera *videoCamera;//输入源
+@property(nonatomic, strong) GPUImageStillCamera *videoCamera;//GPUImage输入源
 @property (nonatomic, strong) GPUImageView *filterView; //显示的View
-@property(nonatomic, strong) GPUImageOutput<GPUImageInput> *filter;//最后处理的滤镜
+@property(nonatomic, strong) GPUImageFilterPipeline *pipeline;//当前正在使用的滤镜组
 @property(nonatomic, strong) GPUImageMovieWriter *movieWriter;//视频录制
 @property(nonatomic, strong) NSURL *outputUrl; //视频输出地址
 @property (copy, nonatomic) NSString *cameraQuality;//拍摄质量
+
+
 
 //聚焦
 @property (strong, nonatomic) UITapGestureRecognizer *tapGesture;//点击手势
@@ -38,7 +42,7 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
 
 @implementation LVCaptureController
 
-#pragma mark - Initialize
+#pragma mark - 初始化
 
 -(instancetype) init
 {
@@ -80,13 +84,13 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     _position = position;
     _recordingEnabled = recordingEnabled;
     _flash = LVCaptureFlashOff;
-//    _mirror = LVCaptureMirrorAuto;
     _whiteBalanceMode = AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance;
     _useDeviceOrientation = YES;
     _tapToFocus = NO;
     _recording = NO;
-    _zoomingEnabled = YES;
+    _zoomingEnabled = NO;
     _effectiveScale = 1.0f;
+    _openBeautyFilter = NO;
 }
 
 - (void)viewDidLoad {
@@ -130,18 +134,17 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
         if (granted) {
             //如果是视频录制，额外需要麦克风权限  没有麦克风权限的话就没有声音
             if (self.recordingEnabled) {
-                 [self initialize];
-//                [LVCaptureController requestMicrophonePermission:^(BOOL granted) {
-//                    if (granted) {
-                    
-//                    }else
-//                    {
-//                        NSError *error = [NSError errorWithDomain:LVCameraErrorDomain
-//                                                             code:LVCameraErrorCodeCameraPermission
-//                                                         userInfo:nil];
-//                        [self passError:error];
-//                    }
-//                }];
+                [LVCaptureController requestMicrophonePermission:^(BOOL granted) {
+                    if (granted) {
+                        [self initialize];
+                    }else
+                    {
+                        NSError *error = [NSError errorWithDomain:LVCameraErrorDomain
+                                                             code:LVCameraErrorCodeCameraPermission
+                                                         userInfo:nil];
+                        [self passError:error];
+                    }
+                }];
             }else
             {
                 [self initialize];
@@ -182,115 +185,33 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
                 devicePosition = AVCaptureDevicePositionUnspecified;
                 break;
         }
+        //初始化相机
         _videoCamera = [[GPUImageStillCamera alloc] initWithSessionPreset:self.cameraQuality cameraPosition:devicePosition];
         _videoCamera.outputImageOrientation = (NSInteger)[self orientationForConnection];   //输出图片方向
         _videoCamera.horizontallyMirrorFrontFacingCamera = YES; //前置相机是否镜像
         
-        self.filter = [[GPUImageFilter alloc] init];
-        
+        //预览界面
         self.filterView = [[GPUImageView alloc] initWithFrame:self.preview.bounds];
         self.filterView.fillMode = kGPUImageFillModePreserveAspectRatioAndFill;
         [self.preview addSubview:self.filterView];
         
-        [_videoCamera addTarget:self.filter];
-        [self.filter addTarget:self.filterView];
+        //添加输入输出关系
+        self.pipeline = [[GPUImageFilterPipeline alloc] initWithOrderedFilters:@[] input:_videoCamera output:self.filterView];
+        //滤镜配置
+        [self setupDefaultFilter];
         
+        //添加音频输入
         if (self.isRecordingEnabled) {
             [_videoCamera addAudioInputsAndOutputs];
         }
+        
+        //设置默认的白平衡
+        [self setWhiteBalanceMode:_whiteBalanceMode];
+        
+        //设置默认闪光灯
+        [self updateFlashMode:_flash];
     }
     [self.videoCamera startCameraCapture];
-    
-//    if (!_session) {
-//        _session = [[AVCaptureSession alloc] init];
-//        _session.sessionPreset = self.cameraQuality;
-        
-        //preView layer
-//        CGRect bounds = self.preview.layer.bounds;
-//        _captureVideoPreviewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:self.session];
-//        _captureVideoPreviewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-//        _captureVideoPreviewLayer.bounds = bounds;
-//        _captureVideoPreviewLayer.position = CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds));
-//        [self.preview.layer addSublayer:_captureVideoPreviewLayer];
-        
-        //获取相机设备
-//        AVCaptureDevicePosition devicePosition;
-//        switch (self.position) {
-//            case LVCapturePositionRear:
-//                if([self.class isRearCameraAvailable]) {
-//                    devicePosition = AVCaptureDevicePositionBack;
-//                } else {
-//                    devicePosition = AVCaptureDevicePositionFront;
-//                    _position = LVCapturePositionFront;
-//                }
-//                break;
-//                case LVCapturePositionFront:
-//                if([self.class isFrontCameraAvailable]) {
-//                    devicePosition = AVCaptureDevicePositionFront;
-//                } else {
-//                    devicePosition = AVCaptureDevicePositionBack;
-//                    _position = LVCapturePositionRear;
-//                }
-//                break;
-//            default:
-//                devicePosition = AVCaptureDevicePositionUnspecified;
-//                break;
-//        }
-        
-//        if (devicePosition == AVCaptureDevicePositionUnspecified) {
-//            self.videoCaptureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-//        }else
-//        {
-//            self.videoCaptureDevice = [self cameraWithPosition:devicePosition];
-//        }
-        
-        //配置输入数据管理对象
-//        NSError *error = nil;
-//        _videoDeviceInput = [[AVCaptureDeviceInput alloc] initWithDevice:self.videoCaptureDevice error:&error];
-//
-//        if (!_videoDeviceInput) {
-//            [self passError:error];
-//            return;
-//        }
-//
-//        if ([_session canAddInput:_videoDeviceInput]) {
-//            [_session addInput:_videoDeviceInput];
-//            self.captureVideoPreviewLayer.connection.videoOrientation = [self orientationForConnection];
-//        }
-//
-//        if (self.recordingEnabled) {
-//            _audioCaptureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
-//            _audioDeviceInput = [AVCaptureDeviceInput deviceInputWithDevice:_audioCaptureDevice error:&error];
-//            if (!_audioDeviceInput) {
-//                [self passError:error];
-//            }
-//
-//            if ([_session canAddInput:_audioDeviceInput]) {
-//                [_session addInput:_audioDeviceInput];
-//            }
-//
-//            _movieFileOutput = [[AVCaptureMovieFileOutput alloc] init];
-//            [_movieFileOutput setMovieFragmentInterval:kCMTimeInvalid];
-//            if ([self.session canAddOutput:_movieFileOutput]) {
-//                [self.session addOutput:_movieFileOutput];
-//            }
-//        }
-        
-//        //白平衡
-//        self.whiteBalanceMode = AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance;
-//
-//        //输出数据管理对象
-//        self.stillImageOutput = [[AVCaptureStillImageOutput alloc] init];
-//        NSDictionary *outputSettings = [[NSDictionary alloc] initWithObjectsAndKeys:AVVideoCodecJPEG,AVVideoCodecKey, nil];
-//        [self.stillImageOutput setOutputSettings:outputSettings];
-//        [self.session addOutput:self.stillImageOutput];
-//    }
-    
-//    if (![self.captureVideoPreviewLayer.connection isEnabled]) {
-//        [self.captureVideoPreviewLayer.connection setEnabled:YES];
-//    }
-//
-//    [self.session startRunning];
 }
 
 - (void)stop
@@ -298,15 +219,50 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     [self.videoCamera stopCameraCapture];
 }
 
+#pragma mark - 滤镜
+-(void)setupDefaultFilter
+{
+    NSMutableArray *arrayM = [NSMutableArray array];
+    if (_openBeautyFilter) {
+        LFGPUImageBeautyFilter *filter = [[LFGPUImageBeautyFilter alloc] init];
+        [arrayM addObject:filter];
+    }else
+    {
+        GPUImageFilter *filter = [[GPUImageFilter alloc] init];
+        [arrayM addObject:filter];
+    }
+    //如果存在定义的滤镜，叠加效果
+    if (_filters) {
+        [arrayM addObject:_filters];
+    }
+    [self.pipeline replaceAllFilters:arrayM];
+}
+
+-(void)setOpenBeautyFilter:(BOOL)openBeautyFilter
+{
+    _openBeautyFilter = openBeautyFilter;
+    if (self.videoCamera) {
+        [self setupDefaultFilter];
+    }
+}
+
+-(void)setFilters:(GPUImageOutput<GPUImageInput> *)filters
+{
+    _filters = filters;
+    if (self.videoCamera) {
+        [self setupDefaultFilter];
+    }
+}
+
 #pragma mark - image Capture
--(void)capture:(void (^)(LVCaptureController *capture,UIImage *image, NSError *error))onCapture exactSeenImage:(BOOL)exactSeenImage animationBlock:(void (^)(void))animationBlock
+-(void)capture:(void (^)(LVCaptureController *capture,UIImage *image, NSError *error))onCapture animationBlock:(void (^)(void))animationBlock
 {
     if (!self.videoCamera.captureSession) {
         NSError *error = [NSError errorWithDomain:LVCameraErrorDomain code:LVCameraErrorCodeSession userInfo:nil];
         onCapture(self,nil,error);
         return;
     }
-    //根据设备输出获得链接
+    
     self.videoCamera.outputImageOrientation = (NSInteger)[self orientationForConnection];
     
     BOOL flashActive =  self.videoCamera.inputCamera.flashActive;
@@ -314,51 +270,28 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
         animationBlock();
     }
     
-    [self.videoCamera capturePhotoAsImageProcessedUpToFilter:nil withCompletionHandler:^(UIImage *processedImage, NSError *error) {
-        UIImage *image = nil;
+    [self.videoCamera capturePhotoAsImageProcessedUpToFilter:[self.pipeline.filters lastObject] withCompletionHandler:^(UIImage *processedImage, NSError *error) {
         if (onCapture) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                onCapture(self,image,error);
+                onCapture(self,processedImage,error);
             });
         }
     }];
-    
-    
-//    [self.stillImageOutput captureStillImageAsynchronouslyFromConnection:captureConnection completionHandler:^(CMSampleBufferRef  _Nullable imageDataSampleBuffer, NSError * _Nullable error) {
-//        UIImage *image = nil;
-//
-//        if (imageDataSampleBuffer) {
-//            NSData *imageData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageDataSampleBuffer];
-//            image = [UIImage imageWithData:imageData];
-//            if (exactSeenImage) {
-//                image = [self cropImage:image usingPreviewLayer:self.captureVideoPreviewLayer];
-//            }
-//        }
-//
-//
-//    }];
-}
-
--(void)capture:(void (^)(LVCaptureController *camera, UIImage *image, NSError *error))onCapture exactSeenImage:(BOOL)exactSeenImage
-{
-    [self capture:onCapture exactSeenImage:exactSeenImage animationBlock:nil];
-    
-//    [self capture:onCapture exactSeenImage:exactSeenImage animationBlock:^() {
-//        CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"opacity"];
-//        animation.duration = 0.1;
-//        animation.autoreverses = YES;
-//        animation.repeatCount = 0.0;
-//        animation.fromValue = [NSNumber numberWithFloat:1.0];
-//        animation.toValue = [NSNumber numberWithFloat:0.1];
-//        animation.fillMode = kCAFillModeForwards;
-//        animation.removedOnCompletion = NO;
-//        [layer addAnimation:animation forKey:@"animateOpacity"];
-//    }];
 }
 
 -(void)capture:(void (^)(LVCaptureController *camera, UIImage *image, NSError *error))onCapture
 {
-    [self capture:onCapture exactSeenImage:NO];
+    [self capture:onCapture animationBlock:^{
+        CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"opacity"];
+                animation.duration = 0.1;
+                animation.autoreverses = YES;
+                animation.repeatCount = 0.0;
+                animation.fromValue = [NSNumber numberWithFloat:1.0];
+                animation.toValue = [NSNumber numberWithFloat:0.1];
+                animation.fillMode = kCAFillModeForwards;
+                animation.removedOnCompletion = NO;
+                [self.preview.layer addAnimation:animation forKey:@"animateOpacity"];
+    }];
 }
 
 
@@ -372,6 +305,7 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     }
     
     if (self.flash == LVCaptureFlashOn) {
+        //开启手电筒
         [self enableTorch:YES];
     }
     
@@ -382,11 +316,10 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     self.outputUrl = url;
     self.movieWriter = [[GPUImageMovieWriter alloc] initWithMovieURL:url size:CGSizeMake(480, 640)];
     self.movieWriter.encodingLiveVideo = YES;
-    [self.filter addTarget:self.movieWriter];
+    [[self.pipeline.filters lastObject] addTarget:self.movieWriter];
     self.videoCamera.audioEncodingTarget = self.movieWriter;
     [self.movieWriter startRecording];
     self.recording = YES;
-//    [self.movieFileOutput startRecordingToOutputFileURL:url recordingDelegate:self];
 }
 
 -(void)stopRecording
@@ -396,24 +329,16 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     }
     
     self.recording = NO;
-    [self.filter removeTarget:self.movieWriter];
+    [[self.pipeline.filters lastObject] removeTarget:self.movieWriter];
     self.videoCamera.audioEncodingTarget = nil;
     [self.movieWriter finishRecording];
 }
-
-//-(void)captureOutput:(AVCaptureFileOutput *)output didStartRecordingToOutputFileAtURL:(NSURL *)fileURL fromConnections:(NSArray<AVCaptureConnection *> *)connections
-//{
-//
-//    if (self.onStartRecording) {
-//        self.onStartRecording(self);
-//    }
-//}
 
 -(void)movieRecordingCompleted
 {
     self.recording = NO;
     [self enableTorch:NO];
-    [self.filter removeTarget:self.movieWriter];
+    [[self.pipeline.filters lastObject] removeTarget:self.movieWriter];
     self.videoCamera.audioEncodingTarget = nil;
     [self.movieWriter finishRecording];
     
@@ -426,7 +351,7 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
 {
     self.recording = NO;
     [self enableTorch:NO];
-    [self.filter removeTarget:self.movieWriter];
+    [[self.pipeline.filters lastObject] removeTarget:self.movieWriter];
     self.videoCamera.audioEncodingTarget = nil;
     [self.movieWriter finishRecording];
     
@@ -435,18 +360,8 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     }
 }
 
-- (void)enableTorch:(BOOL)enabled
-{
-    // check if the device has a torch, otherwise don't do anything
-    if([self isTorchAvailable]) {
-        AVCaptureTorchMode torchMode = enabled ? AVCaptureTorchModeOn : AVCaptureTorchModeOff;
-        [self changeDeviceProperty:^(AVCaptureDevice *captureDevice) {
-            [self.videoCamera.inputCamera setTorchMode:torchMode];
-        }];
-    }
-}
 
-#pragma mark - Pinch scale
+#pragma mark - 双指缩放
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
 {
     if ( [gestureRecognizer isKindOfClass:[UIPinchGestureRecognizer class]] ) {
@@ -514,9 +429,14 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
         return;
     }
     CGPoint touchedPoint = [gestureRecognizer locationInView:self.preview];
-//    CGPoint pointOfInterest = [self.preview captureDevicePointOfInterestForPoint:touchedPoint];
-    [self focusAtPoint:touchedPoint];
     [self showFocusBox:touchedPoint];
+    //这里需要自己做映射，将点击的点坐标映射到相机坐标中
+    if(self.videoCamera.cameraPosition == AVCaptureDevicePositionBack){
+        touchedPoint = CGPointMake(touchedPoint.y /gestureRecognizer.view.bounds.size.height ,1-touchedPoint.x/gestureRecognizer.view.bounds.size.width);
+    }else
+        touchedPoint = CGPointMake(touchedPoint.y /gestureRecognizer.view.bounds.size.height ,touchedPoint.x/gestureRecognizer.view.bounds.size.width);
+    
+    [self focusAtPoint:touchedPoint];
 }
 
 //更改聚焦状态
@@ -561,55 +481,6 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     }
 }
 
-//-(void)setMirror:(LVCaptureMirror)mirror
-//{
-//    _mirror = mirror;
-//
-//    if (!self.session) {
-//        return;
-//    }
-//
-//    AVCaptureConnection *videoConnection = [_movieFileOutput connectionWithMediaType:AVMediaTypeVideo];
-//    AVCaptureConnection *pictureConnection = [_stillImageOutput connectionWithMediaType:AVMediaTypeVideo];
-//
-//    switch (mirror) {
-//        case LVCaptureMirrorOff:
-//            if ([videoConnection isVideoMirroringSupported]) {
-//                [videoConnection setVideoMirrored:NO];
-//            }
-//
-//            if ([pictureConnection isVideoMirroringSupported]) {
-//                [pictureConnection setVideoMirrored:NO];
-//            }
-//            break;
-//        case LVCaptureMirrorOn:
-//            if ([videoConnection isVideoMirroringSupported]) {
-//                [videoConnection setVideoMirrored:YES];
-//            }
-//
-//            if ([pictureConnection isVideoMirroringSupported]) {
-//                [pictureConnection setVideoMirrored:YES];
-//            }
-//            break;
-//        case LVCaptureMirrorAuto:
-//        {
-//            BOOL shouldMirror = (_position == LVCapturePositionFront);
-//            if ([videoConnection isVideoMirroringSupported]) {
-//                [videoConnection setVideoMirrored:shouldMirror];
-//            }
-//
-//            if ([pictureConnection isVideoMirroringSupported]) {
-//                [pictureConnection setVideoMirrored:shouldMirror];
-//            }
-//        }
-//            break;
-//
-//        default:
-//            break;
-//    }
-//    return;
-//}
-
 #pragma mark - 摄像头转换
 - (void)setCameraPosition:(LVCapturePosition)cameraPosition
 {
@@ -624,15 +495,11 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     if(cameraPosition == LVCapturePositionFront && ![self.class isFrontCameraAvailable]) {
         return;
     }
-    //修改摄像头
-    if (cameraPosition == LVCapturePositionRear && self.videoCamera.cameraPosition != AVCaptureDevicePositionBack) {
-        [self.videoCamera rotateCamera];
-    }
-    
-    if (cameraPosition == LVCapturePositionFront && self.videoCamera.cameraPosition != AVCaptureDevicePositionFront) {
-        [self.videoCamera rotateCamera];
-    }
+    [self.videoCamera stopCameraCapture];
+    self.videoCamera = nil;
     _position = cameraPosition;
+    
+    [self initialize];
 }
 
 - (LVCapturePosition)changePosition
@@ -655,11 +522,6 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
 -(BOOL)isFlashAvailable
 {
     return self.videoCamera.inputCamera.hasFlash && self.videoCamera.inputCamera.isFlashAvailable;
-}
-
--(BOOL)isTorchAvailable
-{
-    return self.videoCamera.inputCamera.hasTorch && self.videoCamera.inputCamera.isTorchAvailable;
 }
 
 //更新闪光灯模式
@@ -696,6 +558,22 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     }
 }
 
+-(BOOL)isTorchAvailable
+{
+    return self.videoCamera.inputCamera.hasTorch && self.videoCamera.inputCamera.isTorchAvailable;
+}
+
+- (void)enableTorch:(BOOL)enabled
+{
+    if([self isTorchAvailable]) {
+        AVCaptureTorchMode torchMode = enabled ? AVCaptureTorchModeOn : AVCaptureTorchModeOff;
+        [self changeDeviceProperty:^(AVCaptureDevice *captureDevice) {
+            [self.videoCamera.inputCamera setTorchMode:torchMode];
+        }];
+    }
+}
+
+
 #pragma mark - other
 
 - (void)passError:(NSError *)error
@@ -731,25 +609,6 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
         if (device.position == position) return device;
     }
     return nil;
-}
-
-//图片裁剪
-- (UIImage *)cropImage:(UIImage *)image usingPreviewLayer:(AVCaptureVideoPreviewLayer *)previewLayer
-{
-    CGRect previewBounds = previewLayer.bounds;
-    CGRect outputRect = [previewLayer metadataOutputRectOfInterestForRect:previewBounds];
-    
-    CGImageRef takenCGImage = image.CGImage;
-    size_t width = CGImageGetWidth(takenCGImage);
-    size_t height = CGImageGetHeight(takenCGImage);
-    CGRect cropRect = CGRectMake(outputRect.origin.x * width, outputRect.origin.y * height,
-                                 outputRect.size.width * width, outputRect.size.height * height);
-    
-    CGImageRef cropCGImage = CGImageCreateWithImageInRect(takenCGImage, cropRect);
-    image = [UIImage imageWithCGImage:cropCGImage scale:1 orientation:image.imageOrientation];
-    CGImageRelease(cropCGImage);
-    
-    return image;
 }
 
 #pragma mark - Controller
@@ -818,8 +677,7 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     [self stop];
 }
 
-#pragma mark - Class Methods Premission
-
+#pragma mark - Premission
 + (void)requestCameraPermission:(void (^)(BOOL granted))completionBlock
 {
     if ([AVCaptureDevice respondsToSelector:@selector(requestAccessForMediaType: completionHandler:)]) {

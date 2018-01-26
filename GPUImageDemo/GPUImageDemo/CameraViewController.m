@@ -107,7 +107,6 @@
     
     CIImage * cropImage = [image imageByApplyingTransform:transform];//[self cropImage:image];iOS CIImageOrientation
     
-    
     dispatch_async(dispatch_get_main_queue(), ^{
         self.currentImageView.image = [self uiImageConvertFromCIImage:cropImage];
     });

@@ -11,7 +11,7 @@
 #import "FWApplyFilter.h"
 #import "TZImagePickerController.h"
 
-//#import "CameraViewController.h"
+#import "CameraViewController.h"
 #import "TestViewController.h"
 
 @interface ViewController ()

@@ -8,24 +8,190 @@
 
 #import "TestViewController.h"
 #import "LVCaptureController.h"
+#import "XCategoryHeader.h"
+#import "XMacros.h"
+
+#import "FWNashvilleFilter.h"
+#import "FWLordKelvinFilter.h"
+//#import "GPUImageVibranceFilter.h"
+#import "FWAmaroFilter.h"
+#import "FWRiseFilter.h"
+#import "FWHudsonFilter.h"
+#import "FW1977Filter.h"
+#import "FWValenciaFilter.h"
+#import "FWXproIIFilter.h"
+#import "FWWaldenFilter.h"
+#import "FWLomofiFilter.h"
+#import "FWInkwellFilter.h"
+#import "FWSierraFilter.h"
+#import "FWEarlybirdFilter.h"
+#import "FWSutroFilter.h"
+#import "FWToasterFilter.h"
+#import "FWBrannanFilter.h"
+#import "FWHefeFilter.h"
+
 
 @interface TestViewController ()
 
 @property(nonatomic, strong) LVCaptureController *capture;
 
+@property(nonatomic, assign) NSInteger index;
+@property(nonatomic, strong) NSArray *titleArray;
+@property(nonatomic, strong) UILabel *titleLabel;
+
 @end
 
 @implementation TestViewController
 
+-(void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    [self.capture start];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.capture = [[LVCaptureController alloc] initWithQuality:AVCaptureSessionPresetHigh position:LVCapturePositionRear enableRecording:YES];
+    self.capture = [[LVCaptureController alloc] initWithQuality:AVCaptureSessionPresetHigh position:LVCapturePositionFront enableRecording:YES];
     [self.capture attachToViewController:self withFrame:self.view.bounds];
-    [self.capture capture:^(LVCaptureController *camera, UIImage *image, NSError *error) {
-        
-    }];
-    [self.capture start];
+    //开启美颜
+//    self.capture.openBeautyFilter = YES;
+    //点击聚焦
     self.capture.tapToFocus = YES;
+    
+    [self createUI];
+    
+    self.index = 0;
+    self.titleArray = @[@"原图", @"经典LOMO", @"流年", @"HDR", @"碧波", @"上野", @"优格", @"彩虹瀑", @"云端"];
+}
+
+-(void)createUI
+{
+    UIButton *flash = [UIButton buttonWithType:UIButtonTypeCustom];
+    [self.view addSubview:flash];
+    flash.titleLabel.font = [UIFont systemFontOfSize:14];
+    [flash setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [flash setTitle:@"闪光灯:on" forState:UIControlStateSelected];
+    [flash setTitle:@"闪光灯:off" forState:UIControlStateNormal];
+    __weak __typeof(flash)weakFlash = flash;
+    [flash addActionHandler:^(NSInteger tag) {
+        weakFlash.selected = !weakFlash.isSelected;
+        if (weakFlash.isSelected) {
+            [self.capture updateFlashMode:LVCaptureFlashOn];
+        }else
+        {
+            [self.capture updateFlashMode:LVCaptureFlashOff];
+        }
+    }];
+    flash.frame = CGRectMake(0, 20, 80, 40);
+    
+    
+    UIButton *changePosition = [UIButton buttonWithType:UIButtonTypeCustom];
+    [self.view addSubview:changePosition];
+    changePosition.titleLabel.font = [UIFont systemFontOfSize:14];
+    [changePosition setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [changePosition setTitle:@"切换相机" forState:UIControlStateNormal];
+    [changePosition addActionHandler:^(NSInteger tag) {
+        [self.capture changePosition];
+    }];
+    changePosition.frame = CGRectMake(80, 20, 60, 40);
+    
+    
+    UIImageView *imageView = [self.view addImageViewWithImage:nil];
+    imageView.frame = CGRectMake(0, 100, KScreenWidth/4, KScreenHeight/4);
+    
+    UIButton *capture = [UIButton buttonWithType:UIButtonTypeCustom];
+    [self.view addSubview:capture];
+    capture.backgroundColor = [UIColor whiteColor];
+    capture.clipsToBounds = YES;
+    capture.layer.cornerRadius = 30;
+    [capture addActionHandler:^(NSInteger tag) {
+        [self.capture capture:^(LVCaptureController *camera, UIImage *image, NSError *error) {
+            imageView.image = image;
+        }];
+    }];
+    capture.frame = CGRectMake((KScreenWidth - 40)/2, KScreenHeight - 80, 60, 60);
+    
+    UIButton *beauty = [UIButton buttonWithType:UIButtonTypeCustom];
+    [self.view addSubview:beauty];
+    beauty.titleLabel.font = [UIFont systemFontOfSize:14];
+    [beauty setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [beauty setTitle:@"开关美颜" forState:UIControlStateNormal];
+    [beauty addActionHandler:^(NSInteger tag) {
+        self.capture.openBeautyFilter = !self.capture.openBeautyFilter;
+    }];
+    beauty.frame = CGRectMake(160, 20, 60, 40);
+    
+    UIButton *change = [UIButton buttonWithType:UIButtonTypeCustom];
+    [self.view addSubview:change];
+    change.titleLabel.font = [UIFont systemFontOfSize:14];
+    [change setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [change setTitle:@"切换滤镜" forState:UIControlStateNormal];
+    [change addActionHandler:^(NSInteger tag) {
+        if (self.index == self.titleArray.count - 1) {
+            self.index = 0;
+        }else
+        {
+            self.index ++;
+        }
+    }];
+    change.frame = CGRectMake(240, 20, 60, 40);
+    
+    self.titleLabel = [[UILabel alloc] init];
+    self.titleLabel.font = [UIFont boldSystemFontOfSize:20];
+    self.titleLabel.textColor = [UIColor whiteColor];
+    [self.view addSubview:self.titleLabel];
+    self.titleLabel.frame = CGRectMake(0, 0, 100, KScreenWidth);
+    self.titleLabel.hidden = YES;
+    self.titleLabel.textAlignment = NSTextAlignmentCenter;
+}
+
+
+-(void)setIndex:(NSInteger)index
+{
+    _index = index;
+    self.titleLabel.text = self.titleArray[index];
+    self.titleLabel.hidden = NO;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        self.titleLabel.hidden = YES;
+    });
+    switch (index) {
+        case 0:
+            self.capture.filters = nil;
+            break;
+            
+        case 1:
+            self.capture.filters= [[GPUImageSketchFilter alloc] init];
+            break;
+            
+        case 2:
+            //流年
+            self.capture.filters = [[GPUImageSoftEleganceFilter alloc] init];
+            break;
+            
+        case 3:
+            self.capture.filters = [[GPUImageMissEtikateFilter alloc] init];
+            break;
+            
+        case 4:
+            self.capture.filters = [[FWNashvilleFilter alloc] init];
+            break;
+            
+        case 5:
+            self.capture.filters = [[FWLordKelvinFilter alloc] init];
+            break;
+            
+        case 6:
+            self.capture.filters = [[FWAmaroFilter alloc] init];
+            break;
+            
+        case 7:
+            self.capture.filters = [[FWRiseFilter alloc] init];
+            break;
+            
+        case 8:
+            self.capture.filters= [[FWHudsonFilter alloc] init];
+            break;
+    }
 }
 
 - (void)didReceiveMemoryWarning {

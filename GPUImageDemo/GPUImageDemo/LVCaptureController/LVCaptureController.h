@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
+#import "GPUImage.h"
 
 //摄像头
 typedef NS_ENUM(NSUInteger, LVCapturePosition) {
@@ -29,6 +30,7 @@ typedef NS_ENUM(NSUInteger, LVCaptureMirror) {
     LVCaptureMirrorAuto,
 };
 
+//错误信息
 extern NSString *const LVCameraErrorDomain;
 typedef enum : NSUInteger {
     LVCameraErrorCodeCameraPermission = 10, //相机权限错误
@@ -37,6 +39,26 @@ typedef enum : NSUInteger {
     LVCameraErrorCodeVideoNotEnabled = 13 //不允许录制
 } LVSimpleCameraErrorCode;
 
+#pragma mark - 人脸识别代理
+@protocol XFaceDetectionDelegate<NSObject>
+
+/**
+ @param hasFace 是否有人脸
+ @param faceCount 人脸张数
+ */
+-(void)faceDetectionSuccess:(BOOL)hasFace faceCount:(NSUInteger)faceCount;
+
+
+/**
+ 在检测的范围内只有一张人脸时返回 如果openDetection==NO返回所有的图片
+ @param image 检测到人脸时的图片，截取的是检测的范围（返回的图片都是原图）
+ */
+-(void)faceDetectionSuccessWithImage:(UIImage *)image;
+@end
+
+
+
+
 @interface LVCaptureController : UIViewController
 
 #pragma mark - 初始化
@@ -44,8 +66,8 @@ typedef enum : NSUInteger {
 /**
  初始化函数
  @param quality 输出图片质量
- @param position 摄像头位置
- @param recordingEnabled 是否需要录像
+ @param position 摄像头位置   默认后置
+ @param recordingEnabled 是否需要录像     默认不需要
  @return LVCaptureController
  */
 -(instancetype) initWithQuality:(NSString *)quality position:(LVCapturePosition)position enableRecording:(BOOL)recordingEnabled;
@@ -78,19 +100,16 @@ typedef enum : NSUInteger {
 //预览界面
 @property (strong, nonatomic) UIView *preview;
 
-//白平衡模式    Default: AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance
+//白平衡模式    Default: AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance 持续对焦中心点设置白平衡
 @property (nonatomic) AVCaptureWhiteBalanceMode whiteBalanceMode;
 
-//摄像头       Default：LVCapturePositionRear
+//摄像头       Default：LVCapturePositionRear   默认后置
 @property (nonatomic ,assign) LVCapturePosition position;
 
-//闪光灯       Default：LVCaptureFlashOff
+//闪光灯       Default：LVCaptureFlashOff  默认关闭
 @property (nonatomic ,readonly) LVCaptureFlash flash;
 
-//镜像        Default：LVCaptureMirrorAuto
-//@property (nonatomic ,assign) LVCaptureMirror mirror;
-
-//是否允许缩放 Default：YES
+//是否允许缩放 Default：NO
 @property (nonatomic ,assign ,getter=isZoomingEnabled) BOOL zoomingEnabled;
 
 //点击聚焦    Default：NO
@@ -117,11 +136,9 @@ typedef enum : NSUInteger {
  拍照
 
  @param onCapture 返回图片或者错误信息
- @param exactSeenImage 是否需要根据显示的区域进行裁剪
  @param animationBlock 自定义动画
  */
--(void)capture:(void (^)(LVCaptureController *capture,UIImage *image, NSError *error))onCapture exactSeenImage:(BOOL)exactSeenImage animationBlock:(void (^)(void))animationBlock;
--(void)capture:(void (^)(LVCaptureController *camera, UIImage *image, NSError *error))onCapture exactSeenImage:(BOOL)exactSeenImage;
+-(void)capture:(void (^)(LVCaptureController *capture,UIImage *image, NSError *error))onCapture animationBlock:(void (^)(void))animationBlock;
 -(void)capture:(void (^)(LVCaptureController *camera, UIImage *image, NSError *error))onCapture;
 
 #pragma mark - 视频
@@ -143,13 +160,17 @@ typedef enum : NSUInteger {
 //停止录制
 - (void)stopRecording;
 
+#pragma mark - 人脸识别 -
+@property(nonatomic, assign) BOOL openFaceDetection;//是否打开人脸识别，默认关闭
+@property(nonatomic,weak) id<XFaceDetectionDelegate> faceDetectionDelegate;
+@property(nonatomic) CGRect detectionRect;//需要人脸检测的范围，默认全屏
 
+#pragma mark - 美颜滤镜 -
+//传入滤镜后，如果开启美颜，会在美颜效果上加上传入的滤镜效果
+@property(nonatomic, assign) BOOL openBeautyFilter;//是否开启美颜功能  默认 NO  (内部提供两种美颜效果，可以根据需要选择)
+@property(nonatomic, strong) GPUImageOutput<GPUImageInput> *filters;//单个滤镜或者滤镜组
 
-#pragma mark - 人脸识别
-
-#pragma mark - 美颜滤镜
-
-#pragma mark - 权限
+#pragma mark - 权限 -
 
 //闪光灯是否可用
 - (BOOL)isFlashAvailable;
