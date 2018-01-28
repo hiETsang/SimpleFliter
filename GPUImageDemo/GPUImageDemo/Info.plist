@@ -23,7 +23,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>我需要你</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>sdas </string>
+	<string>我要</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>同意好吧</string>
 	<key>UILaunchStoryboardName</key>

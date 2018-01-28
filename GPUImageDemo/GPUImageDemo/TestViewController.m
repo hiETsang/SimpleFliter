@@ -137,10 +137,11 @@
     change.frame = CGRectMake(240, 20, 60, 40);
     
     self.titleLabel = [[UILabel alloc] init];
-    self.titleLabel.font = [UIFont boldSystemFontOfSize:20];
+    self.titleLabel.font = [UIFont boldSystemFontOfSize:28];
     self.titleLabel.textColor = [UIColor whiteColor];
     [self.view addSubview:self.titleLabel];
-    self.titleLabel.frame = CGRectMake(0, 0, 100, KScreenWidth);
+    self.titleLabel.frame = CGRectMake(0, 100, KScreenWidth, 100);
+    self.titleLabel.center = self.view.center;
     self.titleLabel.hidden = YES;
     self.titleLabel.textAlignment = NSTextAlignmentCenter;
 }
@@ -151,7 +152,7 @@
     _index = index;
     self.titleLabel.text = self.titleArray[index];
     self.titleLabel.hidden = NO;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         self.titleLabel.hidden = YES;
     });
     switch (index) {
