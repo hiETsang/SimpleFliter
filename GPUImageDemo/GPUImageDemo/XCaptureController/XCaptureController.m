@@ -322,6 +322,7 @@ NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
     CIImage *resultImage = [CIImage imageWithCGImage:cgimg];
     CGContextRelease(ctx);
     CGImageRelease(cgimg);
+    CGImageRelease(cgImage);
     return resultImage;
 }
 

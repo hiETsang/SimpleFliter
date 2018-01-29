@@ -23,13 +23,6 @@ typedef NS_ENUM(NSUInteger, XCaptureFlash) {
     XCaptureFlashAuto,
 };
 
-//镜像
-typedef NS_ENUM(NSUInteger, XCaptureMirror) {
-    XCaptureMirrorOff,
-    XCaptureMirrorOn,
-    XCaptureMirrorAuto,
-};
-
 //错误信息
 extern NSString *const XCameraErrorDomain;
 typedef enum : NSUInteger {
