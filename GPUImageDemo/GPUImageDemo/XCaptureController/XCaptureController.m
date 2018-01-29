@@ -1,12 +1,12 @@
 //
-//  LVCaptureController.m
+//  XCaptureController.m
 //  CaptureDemo
 //
 //  Created by canoe on 2017/11/2.
 //  Copyright © 2017年 canoe. All rights reserved.
 //
 
-#import "LVCaptureController.h"
+#import "XCaptureController.h"
 #import "LFGPUImageBeautyFilter.h"//美颜效果1  柔光磨皮
 #import "GPUImageBeautifyFilter.h"//美颜效果2  提亮磨皮
 
@@ -17,7 +17,7 @@
 
 typedef void(^PropertyChangeBlock)(AVCaptureDevice *captureDevice);
 
-@interface LVCaptureController ()<UIGestureRecognizerDelegate,GPUImageVideoCameraDelegate,GPUImageMovieWriterDelegate>
+@interface XCaptureController ()<UIGestureRecognizerDelegate,GPUImageVideoCameraDelegate,GPUImageMovieWriterDelegate>
 
 @property(nonatomic, strong) GPUImageStillCamera *videoCamera;//GPUImage输入源
 @property (nonatomic, strong) GPUImageView *filterView; //显示的View
@@ -37,13 +37,13 @@ typedef void(^PropertyChangeBlock)(AVCaptureDevice *captureDevice);
 @property (nonatomic, assign) CGFloat beginGestureScale;//原始放大倍数
 @property (nonatomic, assign) CGFloat effectiveScale;//有效倍数
 
-@property (nonatomic, copy) void (^didRecordCompletionBlock)(LVCaptureController *camera, NSURL *outputFileUrl, NSError *error);//视频拍摄完成回调
+@property (nonatomic, copy) void (^didRecordCompletionBlock)(XCaptureController *camera, NSURL *outputFileUrl, NSError *error);//视频拍摄完成回调
 
 @end
 
-NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
+NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
 
-@implementation LVCaptureController
+@implementation XCaptureController
 
 #pragma mark - 默认配置
 
@@ -54,15 +54,15 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
 
 -(instancetype) initWithQuality:(NSString *)quality
 {
-    return [self initWithQuality:quality position:LVCapturePositionRear];
+    return [self initWithQuality:quality position:XCapturePositionRear];
 }
 
--(instancetype) initWithQuality:(NSString *)quality position:(LVCapturePosition)position
+-(instancetype) initWithQuality:(NSString *)quality position:(XCapturePosition)position
 {
     return [self initWithQuality:quality position:position enableRecording:NO];
 }
 
--(instancetype) initWithQuality:(NSString *)quality position:(LVCapturePosition)position enableRecording:(BOOL)recordingEnabled
+-(instancetype) initWithQuality:(NSString *)quality position:(XCapturePosition)position enableRecording:(BOOL)recordingEnabled
 {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
@@ -75,18 +75,18 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
 {
     if (self = [super initWithCoder:aDecoder]) {
         [self setupWithQuality:AVCaptureSessionPresetHigh
-                      position:LVCapturePositionRear
+                      position:XCapturePositionRear
                enableRecording:NO];
     }
     return self;
 }
 
--(void)setupWithQuality:(NSString *)quality position:(LVCapturePosition)position enableRecording:(BOOL)recordingEnabled
+-(void)setupWithQuality:(NSString *)quality position:(XCapturePosition)position enableRecording:(BOOL)recordingEnabled
 {
     _cameraQuality = quality;
     _position = position;
     _recordingEnabled = recordingEnabled;
-    _flash = LVCaptureFlashOff;
+    _flash = XCaptureFlashOff;
     _whiteBalanceMode = AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance;
     _useDeviceOrientation = YES;
     _tapToFocus = NO;
@@ -134,17 +134,17 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
 
 - (void)start
 {
-    [LVCaptureController requestCameraPermission:^(BOOL granted) {
+    [XCaptureController requestCameraPermission:^(BOOL granted) {
         if (granted) {
             //如果是视频录制，额外需要麦克风权限  没有麦克风权限的话就没有声音
             if (self.recordingEnabled) {
-                [LVCaptureController requestMicrophonePermission:^(BOOL granted) {
+                [XCaptureController requestMicrophonePermission:^(BOOL granted) {
                     if (granted) {
                         [self initialize];
                     }else
                     {
-                        NSError *error = [NSError errorWithDomain:LVCameraErrorDomain
-                                                             code:LVCameraErrorCodeCameraPermission
+                        NSError *error = [NSError errorWithDomain:XCameraErrorDomain
+                                                             code:XCameraErrorCodeCameraPermission
                                                          userInfo:nil];
                         [self passError:error];
                     }
@@ -155,8 +155,8 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
             }
         }else
         {
-            NSError *error = [NSError errorWithDomain:LVCameraErrorDomain
-                                                 code:LVCameraErrorCodeCameraPermission
+            NSError *error = [NSError errorWithDomain:XCameraErrorDomain
+                                                 code:XCameraErrorCodeCameraPermission
                                              userInfo:nil];
             [self passError:error];
         }
@@ -169,20 +169,20 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     if (!_videoCamera) {
         AVCaptureDevicePosition devicePosition;
         switch (self.position) {
-            case LVCapturePositionRear:
+            case XCapturePositionRear:
                 if([self.class isRearCameraAvailable]) {
                     devicePosition = AVCaptureDevicePositionBack;
                 } else {
                     devicePosition = AVCaptureDevicePositionFront;
-                    _position = LVCapturePositionFront;
+                    _position = XCapturePositionFront;
                 }
                 break;
-            case LVCapturePositionFront:
+            case XCapturePositionFront:
                 if([self.class isFrontCameraAvailable]) {
                     devicePosition = AVCaptureDevicePositionFront;
                 } else {
                     devicePosition = AVCaptureDevicePositionBack;
-                    _position = LVCapturePositionRear;
+                    _position = XCapturePositionRear;
                 }
                 break;
             default:
@@ -394,10 +394,10 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
 }
 
 #pragma mark - 拍照
--(void)capture:(void (^)(LVCaptureController *capture,UIImage *image, NSError *error))onCapture animationBlock:(void (^)(void))animationBlock
+-(void)capture:(void (^)(XCaptureController *capture,UIImage *image, NSError *error))onCapture animationBlock:(void (^)(void))animationBlock
 {
     if (!self.videoCamera.captureSession) {
-        NSError *error = [NSError errorWithDomain:LVCameraErrorDomain code:LVCameraErrorCodeSession userInfo:nil];
+        NSError *error = [NSError errorWithDomain:XCameraErrorDomain code:XCameraErrorCodeSession userInfo:nil];
         onCapture(self,nil,error);
         return;
     }
@@ -418,7 +418,7 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     }];
 }
 
--(void)capture:(void (^)(LVCaptureController *camera, UIImage *image, NSError *error))onCapture
+-(void)capture:(void (^)(XCaptureController *camera, UIImage *image, NSError *error))onCapture
 {
     [self capture:onCapture animationBlock:^{
         CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"opacity"];
@@ -435,15 +435,15 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
 
 
 #pragma mark - 录制视频
-- (void)startRecordingWithOutputUrl:(NSURL *)url didRecord:(void (^)(LVCaptureController *, NSURL *, NSError *))completionBlock
+- (void)startRecordingWithOutputUrl:(NSURL *)url didRecord:(void (^)(XCaptureController *, NSURL *, NSError *))completionBlock
 {
     if (!self.recordingEnabled) {
-        NSError *error = [NSError errorWithDomain:LVCameraErrorDomain code:LVCameraErrorCodeVideoNotEnabled userInfo:nil];
+        NSError *error = [NSError errorWithDomain:XCameraErrorDomain code:XCameraErrorCodeVideoNotEnabled userInfo:nil];
         [self passError:error];
         return;
     }
     
-    if (self.flash == LVCaptureFlashOn) {
+    if (self.flash == XCaptureFlashOn) {
         //开启手电筒
         [self enableTorch:YES];
     }
@@ -621,17 +621,17 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
 }
 
 #pragma mark - 摄像头转换
-- (void)setCameraPosition:(LVCapturePosition)cameraPosition
+- (void)setCameraPosition:(XCapturePosition)cameraPosition
 {
     if (_position == cameraPosition || !self.videoCamera.captureSession) {
         return;
     }
     
-    if(cameraPosition == LVCapturePositionRear && ![self.class isRearCameraAvailable]) {
+    if(cameraPosition == XCapturePositionRear && ![self.class isRearCameraAvailable]) {
         return;
     }
     
-    if(cameraPosition == LVCapturePositionFront && ![self.class isFrontCameraAvailable]) {
+    if(cameraPosition == XCapturePositionFront && ![self.class isFrontCameraAvailable]) {
         return;
     }
     [self.videoCamera stopCameraCapture];
@@ -641,17 +641,17 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     [self initialize];
 }
 
-- (LVCapturePosition)changePosition
+- (XCapturePosition)changePosition
 {
     if (!self.videoCamera.inputCamera) {
         return self.position;
     }
     
-    if (self.position == LVCapturePositionFront) {
-        self.cameraPosition = LVCapturePositionRear;
+    if (self.position == XCapturePositionFront) {
+        self.cameraPosition = XCapturePositionRear;
     }else
     {
-        self.cameraPosition = LVCapturePositionFront;
+        self.cameraPosition = XCapturePositionFront;
     }
     
     return self.position;
@@ -664,16 +664,16 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
 }
 
 //更新闪光灯模式
-- (BOOL)updateFlashMode:(LVCaptureFlash)cameraFlash
+- (BOOL)updateFlashMode:(XCaptureFlash)cameraFlash
 {
     if (!self.videoCamera.captureSession)
         return NO;
     
     AVCaptureFlashMode flashMode;
     
-    if (cameraFlash == LVCaptureFlashOn) {
+    if (cameraFlash == XCaptureFlashOn) {
         flashMode = AVCaptureFlashModeOn;
-    }else if (cameraFlash == LVCaptureFlashAuto)
+    }else if (cameraFlash == XCaptureFlashAuto)
     {
         flashMode = AVCaptureFlashModeAuto;
     }else

@@ -7,7 +7,7 @@
 //
 
 #import "TestViewController.h"
-#import "LVCaptureController.h"
+#import "XCaptureController.h"
 #import "XCategoryHeader.h"
 #import "XMacros.h"
 
@@ -33,7 +33,7 @@
 
 @interface TestViewController ()<XFaceDetectionDelegate>
 
-@property(nonatomic, strong) LVCaptureController *capture;
+@property(nonatomic, strong) XCaptureController *capture;
 
 @property(nonatomic, assign) NSInteger index;
 @property(nonatomic, strong) NSArray *titleArray;
@@ -53,7 +53,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.capture = [[LVCaptureController alloc] initWithQuality:AVCaptureSessionPresetHigh position:LVCapturePositionFront enableRecording:YES];
+    self.capture = [[XCaptureController alloc] initWithQuality:AVCaptureSessionPresetHigh position:XCapturePositionFront enableRecording:YES];
     [self.capture attachToViewController:self withFrame:self.view.bounds];
     //点击聚焦
     self.capture.tapToFocus = YES;
@@ -80,10 +80,10 @@
     [flash addActionHandler:^(NSInteger tag) {
         weakFlash.selected = !weakFlash.isSelected;
         if (weakFlash.isSelected) {
-            [self.capture updateFlashMode:LVCaptureFlashOn];
+            [self.capture updateFlashMode:XCaptureFlashOn];
         }else
         {
-            [self.capture updateFlashMode:LVCaptureFlashOff];
+            [self.capture updateFlashMode:XCaptureFlashOff];
         }
     }];
     flash.frame = CGRectMake(0, 20, 80, 40);
@@ -108,7 +108,7 @@
     capture.clipsToBounds = YES;
     capture.layer.cornerRadius = 30;
     [capture addActionHandler:^(NSInteger tag) {
-        [self.capture capture:^(LVCaptureController *camera, UIImage *image, NSError *error) {
+        [self.capture capture:^(XCaptureController *camera, UIImage *image, NSError *error) {
             imageView.image = image;
         }];
     }];

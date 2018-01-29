@@ -1,5 +1,5 @@
 //
-//  LVCaptureController.h
+//  XCaptureController.h
 //  CaptureDemo
 //
 //  Created by canoe on 2017/11/2.
@@ -11,33 +11,33 @@
 #import "GPUImage.h"
 
 //摄像头
-typedef NS_ENUM(NSUInteger, LVCapturePosition) {
-    LVCapturePositionRear,  //后置
-    LVCapturePositionFront  //前置
+typedef NS_ENUM(NSUInteger, XCapturePosition) {
+    XCapturePositionRear,  //后置
+    XCapturePositionFront  //前置
 };
 
 //闪光灯
-typedef NS_ENUM(NSUInteger, LVCaptureFlash) {
-    LVCaptureFlashOff,
-    LVCaptureFlashOn,
-    LVCaptureFlashAuto,
+typedef NS_ENUM(NSUInteger, XCaptureFlash) {
+    XCaptureFlashOff,
+    XCaptureFlashOn,
+    XCaptureFlashAuto,
 };
 
 //镜像
-typedef NS_ENUM(NSUInteger, LVCaptureMirror) {
-    LVCaptureMirrorOff,
-    LVCaptureMirrorOn,
-    LVCaptureMirrorAuto,
+typedef NS_ENUM(NSUInteger, XCaptureMirror) {
+    XCaptureMirrorOff,
+    XCaptureMirrorOn,
+    XCaptureMirrorAuto,
 };
 
 //错误信息
-extern NSString *const LVCameraErrorDomain;
+extern NSString *const XCameraErrorDomain;
 typedef enum : NSUInteger {
-    LVCameraErrorCodeCameraPermission = 10, //相机权限错误
-    LVCameraErrorCodeMicrophonePermission = 11, //麦克风权限错误
-    LVCameraErrorCodeSession = 12, //会话错误
-    LVCameraErrorCodeVideoNotEnabled = 13 //不允许录制
-} LVSimpleCameraErrorCode;
+    XCameraErrorCodeCameraPermission = 10, //相机权限错误
+    XCameraErrorCodeMicrophonePermission = 11, //麦克风权限错误
+    XCameraErrorCodeSession = 12, //会话错误
+    XCameraErrorCodeVideoNotEnabled = 13 //不允许录制
+} XSimpleCameraErrorCode;
 
 #pragma mark - 人脸识别代理
 @protocol XFaceDetectionDelegate<NSObject>
@@ -60,7 +60,7 @@ typedef enum : NSUInteger {
 
 
 
-@interface LVCaptureController : UIViewController
+@interface XCaptureController : UIViewController
 
 #pragma mark - 初始化
 
@@ -69,11 +69,11 @@ typedef enum : NSUInteger {
  @param quality 输出图片质量
  @param position 摄像头位置   默认后置
  @param recordingEnabled 是否需要录像     默认不需要
- @return LVCaptureController
+ @return XCaptureController
  */
--(instancetype) initWithQuality:(NSString *)quality position:(LVCapturePosition)position enableRecording:(BOOL)recordingEnabled;
+-(instancetype) initWithQuality:(NSString *)quality position:(XCapturePosition)position enableRecording:(BOOL)recordingEnabled;
 
--(instancetype) initWithQuality:(NSString *)quality position:(LVCapturePosition)position;
+-(instancetype) initWithQuality:(NSString *)quality position:(XCapturePosition)position;
 
 -(instancetype) initWithQuality:(NSString *)quality;
 
@@ -96,7 +96,7 @@ typedef enum : NSUInteger {
 /**
  返回错误信息
  */
-@property (nonatomic, copy) void (^onError)(LVCaptureController *camera, NSError *error);
+@property (nonatomic, copy) void (^onError)(XCaptureController *camera, NSError *error);
 
 //预览界面
 @property (strong, nonatomic) UIView *preview;
@@ -104,11 +104,11 @@ typedef enum : NSUInteger {
 //白平衡模式    Default: AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance 持续对焦中心点设置白平衡
 @property (nonatomic) AVCaptureWhiteBalanceMode whiteBalanceMode;
 
-//摄像头       Default：LVCapturePositionRear   默认后置
-@property (nonatomic ,assign) LVCapturePosition position;
+//摄像头       Default：XCapturePositionRear   默认后置
+@property (nonatomic ,assign) XCapturePosition position;
 
-//闪光灯       Default：LVCaptureFlashOff  默认关闭
-@property (nonatomic ,readonly) LVCaptureFlash flash;
+//闪光灯       Default：XCaptureFlashOff  默认关闭
+@property (nonatomic ,readonly) XCaptureFlash flash;
 
 //是否允许缩放 Default：NO
 @property (nonatomic ,assign ,getter=isZoomingEnabled) BOOL zoomingEnabled;
@@ -123,10 +123,10 @@ typedef enum : NSUInteger {
  切换摄像头
  @return 当前摄像头
  */
--(LVCapturePosition)changePosition;
+-(XCapturePosition)changePosition;
 
 //更新闪光灯模式
-- (BOOL)updateFlashMode:(LVCaptureFlash)cameraFlash;
+- (BOOL)updateFlashMode:(XCaptureFlash)cameraFlash;
 
 //点击聚焦图层和聚焦动画
 -(void)clickFocusBox:(CALayer *)layer animation:(CAAnimation *)animation;
@@ -139,8 +139,8 @@ typedef enum : NSUInteger {
  @param onCapture 返回图片或者错误信息
  @param animationBlock 自定义动画
  */
--(void)capture:(void (^)(LVCaptureController *capture,UIImage *image, NSError *error))onCapture animationBlock:(void (^)(void))animationBlock;
--(void)capture:(void (^)(LVCaptureController *camera, UIImage *image, NSError *error))onCapture;
+-(void)capture:(void (^)(XCaptureController *capture,UIImage *image, NSError *error))onCapture animationBlock:(void (^)(void))animationBlock;
+-(void)capture:(void (^)(XCaptureController *camera, UIImage *image, NSError *error))onCapture;
 
 #pragma mark - 视频
 
@@ -156,7 +156,7 @@ typedef enum : NSUInteger {
  @param url 视频存储的URL
  @param completionBlock 返回视频路径
  */
-- (void)startRecordingWithOutputUrl:(NSURL *)url didRecord:(void (^)(LVCaptureController *camera, NSURL *outputFileUrl, NSError *error))completionBlock;
+- (void)startRecordingWithOutputUrl:(NSURL *)url didRecord:(void (^)(XCaptureController *camera, NSURL *outputFileUrl, NSError *error))completionBlock;
 
 //停止录制
 - (void)stopRecording;
