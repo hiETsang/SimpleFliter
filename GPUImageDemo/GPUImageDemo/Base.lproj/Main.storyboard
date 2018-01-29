@@ -74,9 +74,9 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Yh6-Ig-uGS">
-                                <rect key="frame" x="16" y="575" width="46" height="30"/>
+                                <rect key="frame" x="8" y="575" width="62" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="下一页"/>
+                                <state key="normal" title="相机模块"/>
                                 <connections>
                                     <action selector="nextPage:" destination="BYZ-38-t0r" eventType="touchUpInside" id="GB3-Il-KP9"/>
                                 </connections>
