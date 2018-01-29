@@ -2,4 +2,54 @@
 <Bucket
    type = "1"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "GPUImageDemo/CameraViewController.m"
+            timestampString = "538905632.711046"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "104"
+            endingLineNumber = "104"
+            landmarkName = "-inputCIImageForDetector:"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "-[CameraViewController inputCIImageForDetector:]"
+                  moduleName = "GPUImageDemo"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/canoe/Documents/GitHub/SimpleFliter/GPUImageDemo/GPUImageDemo/CameraViewController.m"
+                  timestampString = "538905632.785023"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "105"
+                  endingLineNumber = "105"
+                  offsetFromSymbolStart = "244">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "__48-[CameraViewController inputCIImageForDetector:]_block_invoke"
+                  moduleName = "GPUImageDemo"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/canoe/Documents/GitHub/SimpleFliter/GPUImageDemo/GPUImageDemo/CameraViewController.m"
+                  timestampString = "538905632.787202"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "105"
+                  endingLineNumber = "105"
+                  offsetFromSymbolStart = "24">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>

@@ -31,13 +31,15 @@
 #import "FWHefeFilter.h"
 
 
-@interface TestViewController ()
+@interface TestViewController ()<XFaceDetectionDelegate>
 
 @property(nonatomic, strong) LVCaptureController *capture;
 
 @property(nonatomic, assign) NSInteger index;
 @property(nonatomic, strong) NSArray *titleArray;
 @property(nonatomic, strong) UILabel *titleLabel;
+@property(nonatomic, strong) UIButton *faceButton;
+@property(nonatomic, strong) UIImageView *currentFace;
 
 @end
 
@@ -53,10 +55,12 @@
     [super viewDidLoad];
     self.capture = [[LVCaptureController alloc] initWithQuality:AVCaptureSessionPresetHigh position:LVCapturePositionFront enableRecording:YES];
     [self.capture attachToViewController:self withFrame:self.view.bounds];
-    //开启美颜
-//    self.capture.openBeautyFilter = YES;
     //点击聚焦
     self.capture.tapToFocus = YES;
+    //设置人脸识别代理
+    self.capture.faceDetectionDelegate = self;
+    //设置检测区域为中心正方形
+    self.capture.detectionRect = CGRectMake(0, (KScreenHeight - KScreenWidth)/2, KScreenWidth, KScreenWidth);
     
     [self createUI];
     
@@ -83,7 +87,6 @@
         }
     }];
     flash.frame = CGRectMake(0, 20, 80, 40);
-    
     
     UIButton *changePosition = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.view addSubview:changePosition];
@@ -144,6 +147,28 @@
     self.titleLabel.center = self.view.center;
     self.titleLabel.hidden = YES;
     self.titleLabel.textAlignment = NSTextAlignmentCenter;
+    
+    UIButton *face = [UIButton buttonWithType:UIButtonTypeCustom];
+    [self.view addSubview:face];
+    face.titleLabel.font = [UIFont systemFontOfSize:14];
+    [face setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [face setTitle:@"人脸识别:关" forState:UIControlStateNormal];
+    [face setTitle:@"人脸识别:开" forState:UIControlStateSelected];
+    [face addActionHandler:^(NSInteger tag) {
+        self.faceButton.selected = !self.faceButton.isSelected;
+        self.capture.openFaceDetection = !self.capture.openFaceDetection;
+        if (self.faceButton.isSelected == NO) {
+            self.faceButton.backgroundColor = [UIColor redColor];
+        }
+    }];
+    face.backgroundColor = [UIColor redColor];
+    face.frame = CGRectMake(20, KScreenHeight - 100, 90, 40);
+    self.faceButton = face;
+    
+    self.currentFace = [[UIImageView alloc] init];
+    self.currentFace.frame = CGRectMake(KScreenWidth - KScreenWidth/4, KScreenHeight - KScreenHeight/4, KScreenWidth/4, KScreenHeight/4);
+    [self.view addSubview:self.currentFace];
+    self.currentFace.contentMode = UIViewContentModeScaleAspectFit;
 }
 
 
@@ -165,7 +190,6 @@
             break;
             
         case 2:
-            //流年
             self.capture.filters = [[GPUImageSoftEleganceFilter alloc] init];
             break;
             
@@ -194,6 +218,29 @@
             break;
     }
 }
+
+#pragma mark - 人脸识别回调
+
+-(void)faceDetectionSuccessWithImage:(UIImage *)image
+{
+    if (image) {
+        self.currentFace.image = image;
+    }
+}
+
+-(void)faceDetectionSuccess:(BOOL)hasFace faceCount:(NSUInteger)faceCount
+{
+    if (hasFace) {
+        self.faceButton.backgroundColor = [UIColor greenColor];
+        NSLog(@"！！！！！！发现一张大脸");
+    }else
+    {
+        self.faceButton.backgroundColor = [UIColor redColor];
+        NSLog(@"没有人脸 ---------> ");
+    }
+}
+
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

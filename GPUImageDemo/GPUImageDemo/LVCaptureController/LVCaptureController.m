@@ -7,9 +7,13 @@
 //
 
 #import "LVCaptureController.h"
-#import "LFGPUImageBeautyFilter.h"//美颜效果1  柔光
-#import "GPUImageBeautifyFilter.h"//美颜效果2  磨皮
-#import "FWNashvilleFilter.h"
+#import "LFGPUImageBeautyFilter.h"//美颜效果1  柔光磨皮
+#import "GPUImageBeautifyFilter.h"//美颜效果2  提亮磨皮
+
+/***  当前屏幕宽度 */
+#define kScreenWidth  [[UIScreen mainScreen] bounds].size.width
+/***  当前屏幕高度 */
+#define kScreenHeight  [[UIScreen mainScreen] bounds].size.height
 
 typedef void(^PropertyChangeBlock)(AVCaptureDevice *captureDevice);
 
@@ -21,8 +25,7 @@ typedef void(^PropertyChangeBlock)(AVCaptureDevice *captureDevice);
 @property(nonatomic, strong) GPUImageMovieWriter *movieWriter;//视频录制
 @property(nonatomic, strong) NSURL *outputUrl; //视频输出地址
 @property (copy, nonatomic) NSString *cameraQuality;//拍摄质量
-
-
+@property(nonatomic,assign) int mCount; //人脸识别间隔时长统计
 
 //聚焦
 @property (strong, nonatomic) UITapGestureRecognizer *tapGesture;//点击手势
@@ -42,7 +45,7 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
 
 @implementation LVCaptureController
 
-#pragma mark - 初始化
+#pragma mark - 默认配置
 
 -(instancetype) init
 {
@@ -73,7 +76,7 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     if (self = [super initWithCoder:aDecoder]) {
         [self setupWithQuality:AVCaptureSessionPresetHigh
                       position:LVCapturePositionRear
-                  enableRecording:NO];
+               enableRecording:NO];
     }
     return self;
 }
@@ -91,6 +94,7 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     _zoomingEnabled = NO;
     _effectiveScale = 1.0f;
     _openBeautyFilter = NO;
+    _mCount = 0;
 }
 
 - (void)viewDidLoad {
@@ -119,7 +123,7 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
     [self addDefaultFocusBox];
 }
 
-#pragma mark - Camera
+#pragma mark - 相机初始化
 - (void)attachToViewController:(UIViewController *)vc withFrame:(CGRect)frame
 {
     [vc addChildViewController:self];
@@ -210,6 +214,11 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
         
         //设置默认闪光灯
         [self updateFlashMode:_flash];
+        
+        //开启逐帧输出代理
+        if (self.openFaceDetection) {
+            _videoCamera.delegate = self;
+        }
     }
     [self.videoCamera startCameraCapture];
 }
@@ -218,6 +227,136 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
 {
     [self.videoCamera stopCameraCapture];
 }
+
+#pragma mark - 人脸识别
+-(void)setOpenFaceDetection:(BOOL)openFaceDetection
+{
+    _openFaceDetection = openFaceDetection;
+    if (_videoCamera) {
+        _videoCamera.delegate = openFaceDetection?self:nil;
+    }
+}
+
+-(void)willOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
+{
+    if (!_openFaceDetection) {
+        return;
+    }
+    
+    CVPixelBufferRef pixelBuffer = (CVPixelBufferRef)CMSampleBufferGetImageBuffer(sampleBuffer);
+    CIImage *image = [CIImage imageWithCVPixelBuffer:pixelBuffer];
+    self.mCount++;
+    if (self.mCount % 5 == 0) {
+        //每隔5帧检测一次人脸
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self inputCIImageForDetector:image];
+        });
+        self.mCount = 0;
+    }
+}
+
+//对输入的图片进行人脸检测
+-(CIImage *)inputCIImageForDetector:(CIImage *)image{
+    NSDictionary *opts = [NSDictionary dictionaryWithObject:CIDetectorAccuracyLow
+                                                     forKey:CIDetectorAccuracy];
+    CIDetector *detector=[CIDetector detectorOfType:CIDetectorTypeFace context:nil options:opts];
+    //对图片进行修正
+    //裁剪设置的区域
+    CIImage * cropImage = [self cropImage:[self fixCIImageOrientation:image]];
+    
+    //人脸检测
+    NSArray *faceArray = [detector featuresInImage:cropImage
+                                           options:nil];
+    
+    //没有检测到人脸 返回
+    if (!faceArray.count) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if ([self.faceDetectionDelegate respondsToSelector:@selector(faceDetectionSuccess:faceCount:)]) {
+                [self.faceDetectionDelegate faceDetectionSuccess:NO faceCount:0];
+            }
+        });
+        return image;
+    }
+    
+    //有人脸
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([self.faceDetectionDelegate respondsToSelector:@selector(faceDetectionSuccess:faceCount:)]) {
+            [self.faceDetectionDelegate faceDetectionSuccess:YES faceCount:faceArray.count];
+        }
+    });
+    
+    //只有一张人脸
+    if (faceArray.count == 1) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if ([self.faceDetectionDelegate respondsToSelector:@selector(faceDetectionSuccessWithImage:)]) {
+                [self.faceDetectionDelegate faceDetectionSuccessWithImage:[self uiImageConvertFromCIImage:cropImage]];
+            }
+        });
+    }
+    return image;
+}
+
+
+-(CIImage *)fixCIImageOrientation:(CIImage *)ciImage
+{
+    CIContext *context = [CIContext contextWithOptions:nil];
+    CGImageRef cgImage = [context createCGImage:ciImage fromRect:ciImage.extent];
+    
+    CGAffineTransform transform = CGAffineTransformIdentity;
+    
+    if (self.videoCamera.cameraPosition == AVCaptureDevicePositionFront) {
+        transform = CGAffineTransformScale(transform, -1, 1);
+        transform = CGAffineTransformTranslate(transform, -ciImage.extent.size.height, 0);
+    }
+    transform = CGAffineTransformTranslate(transform, 0, ciImage.extent.size.width);
+    transform = CGAffineTransformRotate(transform, -M_PI_2);
+    
+    
+    CGContextRef ctx = CGBitmapContextCreate(NULL, ciImage.extent.size.height, ciImage.extent.size.width,
+                                             CGImageGetBitsPerComponent(cgImage), 0,
+                                             CGImageGetColorSpace(cgImage),
+                                             CGImageGetBitmapInfo(cgImage));
+    CGContextConcatCTM(ctx, transform);
+    CGContextDrawImage(ctx, CGRectMake(0,0,ciImage.extent.size.width,ciImage.extent.size.height), cgImage);
+    CGImageRef cgimg = CGBitmapContextCreateImage(ctx);
+    CIImage *resultImage = [CIImage imageWithCGImage:cgimg];
+    CGContextRelease(ctx);
+    CGImageRelease(cgimg);
+    return resultImage;
+}
+
+
+-(UIImage *)uiImageConvertFromCIImage:(CIImage *)ciImage
+{
+    CIContext *context = [CIContext contextWithOptions:nil];
+    CGImageRef cgImage = [context createCGImage:ciImage fromRect:[ciImage extent]];
+    UIImage *image = [UIImage imageWithCGImage:cgImage];
+    CGImageRelease(cgImage);
+    return image;
+}
+
+-(CIImage *)cropImage:(CIImage *)image
+{
+    if (CGRectEqualToRect(self.detectionRect, CGRectZero)) {
+        return image;
+    }
+
+    float scaleWidth = image.extent.size.width/self.view.frame.size.width;
+    float scaleHeight = image.extent.size.height/(self.view.frame.size.width * kScreenHeight/kScreenWidth);
+
+    CGRect newRect = CGRectZero;
+    newRect.origin.x = self.detectionRect.origin.x * scaleWidth;
+    newRect.origin.y = self.detectionRect.origin.y * scaleHeight;
+    newRect.size.width = self.detectionRect.size.width * scaleWidth;
+    newRect.size.height = self.detectionRect.size.height * scaleHeight;
+
+    CIContext *context = [CIContext contextWithOptions:nil];
+    CGImageRef ref = [context createCGImage:image fromRect:newRect];
+    CIImage *resultImage = [[CIImage alloc] initWithCGImage:ref];
+    CGImageRelease(ref);
+    return resultImage;
+}
+
 
 #pragma mark - 滤镜
 -(void)setupDefaultFilter
@@ -241,7 +380,7 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
 -(void)setOpenBeautyFilter:(BOOL)openBeautyFilter
 {
     _openBeautyFilter = openBeautyFilter;
-    if (self.videoCamera) {
+    if (_videoCamera) {
         [self setupDefaultFilter];
     }
 }
@@ -249,12 +388,12 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
 -(void)setFilters:(GPUImageOutput<GPUImageInput> *)filters
 {
     _filters = filters;
-    if (self.videoCamera) {
+    if (_videoCamera) {
         [self setupDefaultFilter];
     }
 }
 
-#pragma mark - image Capture
+#pragma mark - 拍照
 -(void)capture:(void (^)(LVCaptureController *capture,UIImage *image, NSError *error))onCapture animationBlock:(void (^)(void))animationBlock
 {
     if (!self.videoCamera.captureSession) {
@@ -283,19 +422,19 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
 {
     [self capture:onCapture animationBlock:^{
         CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"opacity"];
-                animation.duration = 0.1;
-                animation.autoreverses = YES;
-                animation.repeatCount = 0.0;
-                animation.fromValue = [NSNumber numberWithFloat:1.0];
-                animation.toValue = [NSNumber numberWithFloat:0.1];
-                animation.fillMode = kCAFillModeForwards;
-                animation.removedOnCompletion = NO;
-                [self.preview.layer addAnimation:animation forKey:@"animateOpacity"];
+        animation.duration = 0.1;
+        animation.autoreverses = YES;
+        animation.repeatCount = 0.0;
+        animation.fromValue = [NSNumber numberWithFloat:1.0];
+        animation.toValue = [NSNumber numberWithFloat:0.1];
+        animation.fillMode = kCAFillModeForwards;
+        animation.removedOnCompletion = NO;
+        [self.preview.layer addAnimation:animation forKey:@"animateOpacity"];
     }];
 }
 
 
-#pragma mark - Video Capture
+#pragma mark - 录制视频
 - (void)startRecordingWithOutputUrl:(NSURL *)url didRecord:(void (^)(LVCaptureController *, NSURL *, NSError *))completionBlock
 {
     if (!self.recordingEnabled) {
@@ -443,10 +582,10 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
 - (void)focusAtPoint:(CGPoint)point
 {
     [self changeDeviceProperty:^(AVCaptureDevice *captureDevice) {
-         if (captureDevice.isFocusPointOfInterestSupported && [captureDevice isFocusModeSupported:AVCaptureFocusModeAutoFocus]) {
-             captureDevice.focusPointOfInterest = point;
-             captureDevice.focusMode = AVCaptureFocusModeContinuousAutoFocus;
-         }
+        if (captureDevice.isFocusPointOfInterestSupported && [captureDevice isFocusModeSupported:AVCaptureFocusModeAutoFocus]) {
+            captureDevice.focusPointOfInterest = point;
+            captureDevice.focusMode = AVCaptureFocusModeContinuousAutoFocus;
+        }
     }];
 }
 
@@ -724,13 +863,13 @@ NSString *const LVCameraErrorDomain = @"LVCameraErrorDomain";
 }
 
 /*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
+ #pragma mark - Navigation
+ 
+ // In a storyboard-based application, you will often want to do a little preparation before navigation
+ - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+ // Get the new view controller using [segue destinationViewController].
+ // Pass the selected object to the new view controller.
+ }
+ */
 
 @end
