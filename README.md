@@ -1,5 +1,5 @@
 # SimpleFliter
-![image]([SimpleFliter/Image-2.gif at master · hiETsang/SimpleFliter · GitHub]https://github.com/hiETsang/SimpleFliter/blob/master/Image-2.gif)  ![image2](https://github.com/hiETsang/SimpleFliter/blob/master/Image.gif)
+![image](https://github.com/hiETsang/SimpleFliter/blob/master/Image-2.gif)  ![image2](https://github.com/hiETsang/SimpleFliter/blob/master/Image.gif)
 
 快速在项目中免费集成美颜和滤镜效果，两种美白以及多种滤镜效果的集成，基于GPUImage的再次封装自定义相机功能，注释清楚，内部还包含了系统人脸识别功能。
 
