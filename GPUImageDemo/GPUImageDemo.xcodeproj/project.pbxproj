@@ -434,7 +434,6 @@
 			isa = PBXGroup;
 			children = (
 				71BD92A81FC8034B00BF7D09 /* images */,
-				71BD91921FC7F29D00BF7D09 /* Custom Filters */,
 				71198D711FC7C777000F3C8E /* GPUImage.xcodeproj */,
 			);
 			path = GPUImage;
@@ -459,6 +458,7 @@
 		714552972019D0CB00500FFB /* XCaptureController */ = {
 			isa = PBXGroup;
 			children = (
+				71BD91921FC7F29D00BF7D09 /* Custom Filters */,
 				714552992019D0CB00500FFB /* XCaptureController.h */,
 				714552982019D0CB00500FFB /* XCaptureController.m */,
 			);

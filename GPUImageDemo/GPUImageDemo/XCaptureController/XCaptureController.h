@@ -41,7 +41,6 @@ typedef enum : NSUInteger {
  */
 -(void)faceDetectionSuccess:(BOOL)hasFace faceCount:(NSUInteger)faceCount;
 
-
 /**
  在检测的范围内只有一张人脸时返回 如果openDetection==NO返回所有的图片
  @param image 人脸图片，如果detectionRect有值，那么裁剪该区域（返回的图片都是没有滤镜和美颜的原图）
@@ -161,7 +160,7 @@ typedef enum : NSUInteger {
 
 #pragma mark - 美颜滤镜 -
 //传入滤镜后，如果开启美颜，会在美颜效果上加上传入的滤镜效果
-@property(nonatomic, assign) BOOL openBeautyFilter;     //是否开启美颜功能  默认 NO  (内部提供两种美颜效果，可以根据需要选择)
+@property(nonatomic, assign) BOOL openBeautyFilter;     //是否开启美颜功能  默认 NO  (内部提供三种美颜效果，可以根据需要选择)
 @property(nonatomic, strong) GPUImageOutput<GPUImageInput> *filters;//单个滤镜或者滤镜组
 
 #pragma mark - 权限 -

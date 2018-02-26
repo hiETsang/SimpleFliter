@@ -29,6 +29,9 @@
 #import "FWToasterFilter.h"
 #import "FWBrannanFilter.h"
 #import "FWHefeFilter.h"
+#import "GPUImageBeautifyFilter.h"
+#import "LFGPUImageBeautyFilter.h"
+#import "FSKGPUImageBeautyFilter.h"
 
 
 @interface TestViewController ()<XFaceDetectionDelegate>
@@ -65,7 +68,7 @@
     [self createUI];
     
     self.index = 0;
-    self.titleArray = @[@"原图", @"经典LOMO", @"流年", @"HDR", @"碧波", @"上野", @"优格", @"彩虹瀑", @"云端"];
+    self.titleArray = @[@"原图", @"经典LOMO", @"流年", @"HDR", @"碧波", @"上野", @"优格", @"彩虹瀑", @"云端",@"美颜1",@"美颜2",@"美颜3"];
 }
 
 -(void)createUI
@@ -216,8 +219,19 @@
         case 8:
             self.capture.filters= [[FWHudsonFilter alloc] init];
             break;
+        case 9:
+            self.capture.filters= [[GPUImageBeautifyFilter alloc] init];
+            break;
+        case 10:
+            self.capture.filters= [[LFGPUImageBeautyFilter alloc] init];
+            break;
+        case 11:
+            self.capture.filters= [[FSKGPUImageBeautyFilter alloc] init];
+            break;
     }
 }
+
+
 
 #pragma mark - 人脸识别回调
 

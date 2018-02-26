@@ -370,7 +370,7 @@ NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
 {
     NSMutableArray *arrayM = [NSMutableArray array];
     if (_openBeautyFilter) {
-        LFGPUImageBeautyFilter *filter = [[LFGPUImageBeautyFilter alloc] init];
+        FSKGPUImageBeautyFilter *filter = [[FSKGPUImageBeautyFilter alloc] init];
         [arrayM addObject:filter];
     }else
     {
