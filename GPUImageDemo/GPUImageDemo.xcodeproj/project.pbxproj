@@ -133,6 +133,7 @@
 		71BD92B01FC8035B00BF7D09 /* lookup_amatorka.png in Resources */ = {isa = PBXBuildFile; fileRef = 71BD92AB1FC8035A00BF7D09 /* lookup_amatorka.png */; };
 		71BD92B11FC8035B00BF7D09 /* lookup_soft_elegance_1.png in Resources */ = {isa = PBXBuildFile; fileRef = 71BD92AC1FC8035A00BF7D09 /* lookup_soft_elegance_1.png */; };
 		71BD92B21FC8035B00BF7D09 /* lookup.png in Resources */ = {isa = PBXBuildFile; fileRef = 71BD92AD1FC8035A00BF7D09 /* lookup.png */; };
+		71F3CF962043E972007DB166 /* FSKGPUImageBeautyFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 71F3CF952043E972007DB166 /* FSKGPUImageBeautyFilter.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -374,6 +375,8 @@
 		71BD92AB1FC8035A00BF7D09 /* lookup_amatorka.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = lookup_amatorka.png; sourceTree = "<group>"; };
 		71BD92AC1FC8035A00BF7D09 /* lookup_soft_elegance_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = lookup_soft_elegance_1.png; sourceTree = "<group>"; };
 		71BD92AD1FC8035A00BF7D09 /* lookup.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = lookup.png; sourceTree = "<group>"; };
+		71F3CF922043E972007DB166 /* FSKGPUImageBeautyFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FSKGPUImageBeautyFilter.h; sourceTree = "<group>"; };
+		71F3CF952043E972007DB166 /* FSKGPUImageBeautyFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FSKGPUImageBeautyFilter.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -431,8 +434,6 @@
 			isa = PBXGroup;
 			children = (
 				71BD92A81FC8034B00BF7D09 /* images */,
-				71BD91CC1FC7F71F00BF7D09 /* FWApplyFilter.h */,
-				71BD91CD1FC7F71F00BF7D09 /* FWApplyFilter.m */,
 				71BD91921FC7F29D00BF7D09 /* Custom Filters */,
 				71198D711FC7C777000F3C8E /* GPUImage.xcodeproj */,
 			);
@@ -644,10 +645,9 @@
 		71BD91921FC7F29D00BF7D09 /* Custom Filters */ = {
 			isa = PBXGroup;
 			children = (
-				717903B320185F0300212571 /* LFGPUImageBeautyFilter.h */,
-				717903B620185F0300212571 /* LFGPUImageBeautyFilter.m */,
-				71198E3C1FC7EBD2000F3C8E /* GPUImageBeautifyFilter.h */,
-				71198E3D1FC7EBD2000F3C8E /* GPUImageBeautifyFilter.m */,
+				71F3CF972043E9A2007DB166 /* BeautyFilters */,
+				71BD91CC1FC7F71F00BF7D09 /* FWApplyFilter.h */,
+				71BD91CD1FC7F71F00BF7D09 /* FWApplyFilter.m */,
 				71BD91931FC7F29D00BF7D09 /* FWXproIIFilter.h */,
 				71BD91941FC7F29D00BF7D09 /* FWBrannanFilter.h */,
 				71BD91951FC7F29D00BF7D09 /* FWNashvilleFilter.m */,
@@ -786,6 +786,19 @@
 				71BD92261FC7FE8100BF7D09 /* FILTERSIMAGE */,
 			);
 			path = images;
+			sourceTree = "<group>";
+		};
+		71F3CF972043E9A2007DB166 /* BeautyFilters */ = {
+			isa = PBXGroup;
+			children = (
+				71F3CF922043E972007DB166 /* FSKGPUImageBeautyFilter.h */,
+				71F3CF952043E972007DB166 /* FSKGPUImageBeautyFilter.m */,
+				717903B320185F0300212571 /* LFGPUImageBeautyFilter.h */,
+				717903B620185F0300212571 /* LFGPUImageBeautyFilter.m */,
+				71198E3C1FC7EBD2000F3C8E /* GPUImageBeautifyFilter.h */,
+				71198E3D1FC7EBD2000F3C8E /* GPUImageBeautifyFilter.m */,
+			);
+			path = BeautyFilters;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -980,6 +993,7 @@
 				71BD91BF1FC7F29D00BF7D09 /* FWBrannanFilter.m in Sources */,
 				7179041F20188CC600212571 /* NSFileManager+X.m in Sources */,
 				7179042B20188CC600212571 /* XDocument.m in Sources */,
+				71F3CF962043E972007DB166 /* FSKGPUImageBeautyFilter.m in Sources */,
 				71BD91C21FC7F29D00BF7D09 /* FWAmaroFilter.m in Sources */,
 				7179041420188CC600212571 /* UITextField+X.m in Sources */,
 				71198BF71FC7BC52000F3C8E /* main.m in Sources */,

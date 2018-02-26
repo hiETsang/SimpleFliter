@@ -9,6 +9,7 @@
 #import "XCaptureController.h"
 #import "LFGPUImageBeautyFilter.h"//美颜效果1  柔光磨皮
 #import "GPUImageBeautifyFilter.h"//美颜效果2  提亮磨皮
+#import "FSKGPUImageBeautyFilter.h"//美颜效果3 粉嫩磨皮
 
 /***  当前屏幕宽度 */
 #define kScreenWidth  [[UIScreen mainScreen] bounds].size.width
@@ -86,14 +87,15 @@ NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
     _cameraQuality = quality;
     _position = position;
     _recordingEnabled = recordingEnabled;
-    _flash = XCaptureFlashOff;
-    _whiteBalanceMode = AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance;
-    _useDeviceOrientation = YES;
-    _tapToFocus = NO;
-    _recording = NO;
-    _zoomingEnabled = NO;
-    _effectiveScale = 1.0f;
-    _openBeautyFilter = NO;
+    _flash = XCaptureFlashOff;//默认关闭闪光灯
+    _whiteBalanceMode = AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance;    //自动调节白平衡
+    _useDeviceOrientation = YES;      //默认使用设备方向
+    _tapToFocus = NO;           //点击聚焦关闭
+    _recording = NO;            //默认关闭录制功能
+    _zoomingEnabled = NO;       //默认关闭双指缩放
+    _effectiveScale = 1.0f;     //缩放比例
+    _openBeautyFilter = NO;     //默认关闭美颜
+    _openFaceDetection = NO;    //默认关闭人脸检测
     _mCount = 0;
 }
 
@@ -113,11 +115,9 @@ NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
     [self.preview addGestureRecognizer:self.tapGesture];
     
     //缩放
-    if (_zoomingEnabled) {
         self.pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(previewPinned:)];
         self.pinchGesture.delegate = self;
         [self.preview addGestureRecognizer:self.pinchGesture];
-    }
     
     //添加聚焦动画
     [self addDefaultFocusBox];
@@ -218,6 +218,12 @@ NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
         //开启逐帧输出代理
         if (self.openFaceDetection) {
             _videoCamera.delegate = self;
+        }
+        
+        //录制视频的时候切换摄像头
+        if (self.recording == YES) {
+            [[self.pipeline.filters lastObject] addTarget:self.movieWriter];
+            self.videoCamera.audioEncodingTarget = self.movieWriter;
         }
     }
     [self.videoCamera startCameraCapture];
@@ -454,6 +460,10 @@ NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
     self.didRecordCompletionBlock = completionBlock;
     
     self.outputUrl = url;
+    //如果文件已经存在，那么就删除
+    if ([[NSFileManager defaultManager] fileExistsAtPath:self.outputUrl.path]) {
+        [[NSFileManager defaultManager] removeItemAtURL:self.outputUrl error:nil];
+    }
     self.movieWriter = [[GPUImageMovieWriter alloc] initWithMovieURL:url size:CGSizeMake(480, 640)];
     self.movieWriter.encodingLiveVideo = YES;
     [[self.pipeline.filters lastObject] addTarget:self.movieWriter];
@@ -468,18 +478,21 @@ NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
         return;
     }
     
+    [self enableTorch:NO];
     self.recording = NO;
     [[self.pipeline.filters lastObject] removeTarget:self.movieWriter];
-    self.videoCamera.audioEncodingTarget = nil;
     [self.movieWriter finishRecording];
+    
+    if (self.didRecordCompletionBlock) {
+        self.didRecordCompletionBlock(self, self.outputUrl, nil);
+    }
 }
 
 -(void)movieRecordingCompleted
 {
-    self.recording = NO;
     [self enableTorch:NO];
+    self.recording = NO;
     [[self.pipeline.filters lastObject] removeTarget:self.movieWriter];
-    self.videoCamera.audioEncodingTarget = nil;
     [self.movieWriter finishRecording];
     
     if (self.didRecordCompletionBlock) {
@@ -489,10 +502,9 @@ NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
 
 -(void)movieRecordingFailedWithError:(NSError *)error
 {
-    self.recording = NO;
     [self enableTorch:NO];
+    self.recording = NO;
     [[self.pipeline.filters lastObject] removeTarget:self.movieWriter];
-    self.videoCamera.audioEncodingTarget = nil;
     [self.movieWriter finishRecording];
     
     if (self.didRecordCompletionBlock) {
@@ -512,6 +524,7 @@ NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
 
 - (void)previewPinned:(UIPinchGestureRecognizer *)recognizer
 {
+    if (!_zoomingEnabled) return;
     BOOL allTouchesAreOnThePreviewLayer = YES;
     NSUInteger numTouches = [recognizer numberOfTouches], i;
     for ( i = 0; i < numTouches; ++i ) {
@@ -668,7 +681,10 @@ NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
 - (BOOL)updateFlashMode:(XCaptureFlash)cameraFlash
 {
     if (!self.videoCamera.captureSession)
+    {
+        _flash = cameraFlash;
         return NO;
+    }
     
     AVCaptureFlashMode flashMode;
     
@@ -803,15 +819,15 @@ NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
 }
 
 //旋转的时候重新布局
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
-{
-    [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
-    
-    // layout subviews is not called when rotating from landscape right/left to left/right
-    if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation) && UIInterfaceOrientationIsLandscape(toInterfaceOrientation)) {
-        [self.view setNeedsLayout];
-    }
-}
+//- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+//{
+//    [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
+//
+//    // layout subviews is not called when rotating from landscape right/left to left/right
+//    if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation) && UIInterfaceOrientationIsLandscape(toInterfaceOrientation)) {
+//        [self.view setNeedsLayout];
+//    }
+//}
 
 - (void)dealloc {
     [self stop];
