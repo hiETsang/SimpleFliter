@@ -33,6 +33,8 @@
 #import "LFGPUImageBeautyFilter.h"
 #import "FSKGPUImageBeautyFilter.h"
 
+#import <AssetsLibrary/AssetsLibrary.h>
+#import "DealVideoController.h"
 
 @interface TestViewController ()<XFaceDetectionDelegate>
 
@@ -56,7 +58,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.capture = [[XCaptureController alloc] initWithQuality:AVCaptureSessionPresetHigh position:XCapturePositionFront enableRecording:YES];
+    self.capture = [[XCaptureController alloc] initWithQuality:AVCaptureSessionPresetMedium position:XCapturePositionFront enableRecording:YES];
     [self.capture attachToViewController:self withFrame:self.view.bounds];
     //点击聚焦
     self.capture.tapToFocus = YES;
@@ -73,9 +75,17 @@
 
 -(void)createUI
 {
+    //内存压力测试
+//                for (NSInteger i = 0 ; i< 3; i++) {
+//                    UIImage *image = [UIImage imageNamed:[NSString stringWithFormat:@"pic%ld.jpeg",i]];
+//                    UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
+//                    imageView.frame = CGRectMake(0, 50, 50, 50);
+//                    [self.view addSubview:imageView];
+//                }
+    
     UIButton *flash = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.view addSubview:flash];
-    flash.titleLabel.font = [UIFont systemFontOfSize:14];
+        flash.titleLabel.font = [UIFont systemFontOfSize:14];
     [flash setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [flash setTitle:@"闪光灯:on" forState:UIControlStateSelected];
     [flash setTitle:@"闪光灯:off" forState:UIControlStateNormal];
@@ -101,7 +111,6 @@
     }];
     changePosition.frame = CGRectMake(80, 20, 60, 40);
     
-    
     UIImageView *imageView = [self.view addImageViewWithImage:nil];
     imageView.frame = CGRectMake(0, 100, KScreenWidth/4, KScreenHeight/4);
     
@@ -110,12 +119,31 @@
     capture.backgroundColor = [UIColor whiteColor];
     capture.clipsToBounds = YES;
     capture.layer.cornerRadius = 30;
-    [capture addActionHandler:^(NSInteger tag) {
-        [self.capture capture:^(XCaptureController *camera, UIImage *image, NSError *error) {
-            imageView.image = image;
-        }];
-    }];
     capture.frame = CGRectMake((KScreenWidth - 40)/2, KScreenHeight - 80, 60, 60);
+    
+    //拍摄照片
+//    [self.capture capture:^(XCaptureController *camera, UIImage *image, NSError *error) {
+//
+//    }];
+    
+    NSURL *outputURL = [[[self applicationDocumentsDirectory]
+                         URLByAppendingPathComponent:@"output"] URLByAppendingPathExtension:@"mov"];
+    //录制10秒视频
+    __weak __typeof(capture)weakCapture = capture;
+    [capture addActionHandler:^(NSInteger tag) {
+        weakCapture.backgroundColor = [UIColor redColor];
+        [self.capture startRecordingWithOutputUrl:outputURL didRecord:^(XCaptureController *camera, NSURL *outputFileUrl, NSError *error) {
+//            [self saveVideoToAblumWithUrl:outputFileUrl];
+            DealVideoController *vc = [[DealVideoController alloc] initWithVideoUrl:outputURL];
+            [self presentViewController:vc animated:NO completion:nil];
+        }];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            weakCapture.backgroundColor = [UIColor whiteColor];
+            [self.capture stopRecording];
+        });
+    }];
+    
+
     
     UIButton *beauty = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.view addSubview:beauty];
@@ -271,4 +299,30 @@
 }
 */
 
+- (NSURL *)applicationDocumentsDirectory{
+    return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+}
+
+-(void)saveVideoToAblumWithUrl:(NSURL *)url
+{
+    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+    if (UIVideoAtPathIsCompatibleWithSavedPhotosAlbum(url.path))
+    {
+        [library writeVideoAtPathToSavedPhotosAlbum:url completionBlock:^(NSURL *assetURL, NSError *error)
+         {
+             dispatch_async(dispatch_get_main_queue(), ^{
+                 
+                 if (error) {
+                     UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"视频保存失败" message:nil
+                                                                    delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                     [alert show];
+                 } else {
+                     UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"视频保存成功" message:nil
+                                                                    delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                     [alert show];
+                 }
+             });
+         }];
+    }
+}
 @end

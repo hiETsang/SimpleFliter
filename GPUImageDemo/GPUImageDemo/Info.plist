@@ -24,6 +24,8 @@
 	<string>我需要你</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>我要</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>相册权限</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>同意好吧</string>
 	<key>UILaunchStoryboardName</key>
