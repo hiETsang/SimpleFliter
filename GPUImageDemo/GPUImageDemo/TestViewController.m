@@ -58,7 +58,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.capture = [[XCaptureController alloc] initWithQuality:AVCaptureSessionPresetMedium position:XCapturePositionFront enableRecording:YES];
+    self.capture = [[XCaptureController alloc] initWithQuality:AVCaptureSessionPresetHigh position:XCapturePositionFront enableRecording:YES];
     [self.capture attachToViewController:self withFrame:self.view.bounds];
     //点击聚焦
     self.capture.tapToFocus = YES;
