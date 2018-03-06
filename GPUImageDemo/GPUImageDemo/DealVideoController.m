@@ -61,8 +61,10 @@
     
     UIButton *button = [self.view addButtonTextTypeWithTitle:@"back" titleColor:[UIColor whiteColor] font:[UIFont systemFontOfSize:16] backColor:nil];
     button.frame = CGRectMake(0, 20, 40, 40);
+    
+    __weak __typeof(self)weakSelf = self;
     [button addActionHandler:^(NSInteger tag) {
-        [self dismissViewControllerAnimated:NO completion:nil];
+        [weakSelf dismissViewControllerAnimated:NO completion:nil];
     }];
 }
 
@@ -70,6 +72,11 @@
 {
     [super viewDidAppear:animated];
     [self.player play];
+}
+
+-(void)dealloc
+{
+    
 }
 
 - (void)didReceiveMemoryWarning {

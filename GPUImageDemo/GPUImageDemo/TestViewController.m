@@ -76,12 +76,12 @@
 -(void)createUI
 {
     //内存压力测试
-//                for (NSInteger i = 0 ; i< 3; i++) {
-//                    UIImage *image = [UIImage imageNamed:[NSString stringWithFormat:@"pic%ld.jpeg",i]];
-//                    UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
-//                    imageView.frame = CGRectMake(0, 50, 50, 50);
-//                    [self.view addSubview:imageView];
-//                }
+                for (NSInteger i = 0 ; i< 3; i++) {
+                    UIImage *image = [UIImage imageNamed:[NSString stringWithFormat:@"pic%ld.jpeg",(long)i]];
+                    UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
+                    imageView.frame = CGRectMake(0, 50, 50, 50);
+                    [self.view addSubview:imageView];
+                }
     
     UIButton *flash = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.view addSubview:flash];
@@ -90,13 +90,14 @@
     [flash setTitle:@"闪光灯:on" forState:UIControlStateSelected];
     [flash setTitle:@"闪光灯:off" forState:UIControlStateNormal];
     __weak __typeof(flash)weakFlash = flash;
+    __weak __typeof(self)weakSelf = self;
     [flash addActionHandler:^(NSInteger tag) {
         weakFlash.selected = !weakFlash.isSelected;
         if (weakFlash.isSelected) {
-            [self.capture updateFlashMode:XCaptureFlashOn];
+            [weakSelf.capture updateFlashMode:XCaptureFlashOn];
         }else
         {
-            [self.capture updateFlashMode:XCaptureFlashOff];
+            [weakSelf.capture updateFlashMode:XCaptureFlashOff];
         }
     }];
     flash.frame = CGRectMake(0, 20, 80, 40);
@@ -107,7 +108,7 @@
     [changePosition setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [changePosition setTitle:@"切换相机" forState:UIControlStateNormal];
     [changePosition addActionHandler:^(NSInteger tag) {
-        [self.capture changePosition];
+        [weakSelf.capture changePosition];
     }];
     changePosition.frame = CGRectMake(80, 20, 60, 40);
     
@@ -132,14 +133,14 @@
     __weak __typeof(capture)weakCapture = capture;
     [capture addActionHandler:^(NSInteger tag) {
         weakCapture.backgroundColor = [UIColor redColor];
-        [self.capture startRecordingWithOutputUrl:outputURL didRecord:^(XCaptureController *camera, NSURL *outputFileUrl, NSError *error) {
+        [weakSelf.capture startRecordingWithOutputUrl:outputURL didRecord:^(XCaptureController *camera, NSURL *outputFileUrl, NSError *error) {
 //            [self saveVideoToAblumWithUrl:outputFileUrl];
             DealVideoController *vc = [[DealVideoController alloc] initWithVideoUrl:outputURL];
-            [self presentViewController:vc animated:NO completion:nil];
+            [weakSelf presentViewController:vc animated:NO completion:nil];
         }];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             weakCapture.backgroundColor = [UIColor whiteColor];
-            [self.capture stopRecording];
+            [weakSelf.capture stopRecording];
         });
     }];
     
@@ -151,7 +152,7 @@
     [beauty setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [beauty setTitle:@"开关美颜" forState:UIControlStateNormal];
     [beauty addActionHandler:^(NSInteger tag) {
-        self.capture.openBeautyFilter = !self.capture.openBeautyFilter;
+        weakSelf.capture.openBeautyFilter = !weakSelf.capture.openBeautyFilter;
     }];
     beauty.frame = CGRectMake(160, 20, 60, 40);
     
@@ -161,11 +162,11 @@
     [change setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [change setTitle:@"切换滤镜" forState:UIControlStateNormal];
     [change addActionHandler:^(NSInteger tag) {
-        if (self.index == self.titleArray.count - 1) {
-            self.index = 0;
+        if (weakSelf.index == weakSelf.titleArray.count - 1) {
+            weakSelf.index = 0;
         }else
         {
-            self.index ++;
+            weakSelf.index ++;
         }
     }];
     change.frame = CGRectMake(240, 20, 60, 40);
@@ -186,10 +187,10 @@
     [face setTitle:@"人脸识别:关" forState:UIControlStateNormal];
     [face setTitle:@"人脸识别:开" forState:UIControlStateSelected];
     [face addActionHandler:^(NSInteger tag) {
-        self.faceButton.selected = !self.faceButton.isSelected;
-        self.capture.openFaceDetection = !self.capture.openFaceDetection;
-        if (self.faceButton.isSelected == NO) {
-            self.faceButton.backgroundColor = [UIColor redColor];
+        weakSelf.faceButton.selected = !weakSelf.faceButton.isSelected;
+        weakSelf.capture.openFaceDetection = !weakSelf.capture.openFaceDetection;
+        if (weakSelf.faceButton.isSelected == NO) {
+            weakSelf.faceButton.backgroundColor = [UIColor redColor];
         }
     }];
     face.backgroundColor = [UIColor redColor];
