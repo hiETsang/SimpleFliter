@@ -76,12 +76,12 @@
 -(void)createUI
 {
     //内存压力测试
-                for (NSInteger i = 0 ; i< 3; i++) {
-                    UIImage *image = [UIImage imageNamed:[NSString stringWithFormat:@"pic%ld.jpeg",(long)i]];
-                    UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
-                    imageView.frame = CGRectMake(0, 50, 50, 50);
-                    [self.view addSubview:imageView];
-                }
+//                for (NSInteger i = 0 ; i< 3; i++) {
+//                    UIImage *image = [UIImage imageNamed:[NSString stringWithFormat:@"pic%ld.jpeg",(long)i]];
+//                    UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
+//                    imageView.frame = CGRectMake(0, 50, 50, 50);
+//                    [self.view addSubview:imageView];
+//                }
     
     UIButton *flash = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.view addSubview:flash];

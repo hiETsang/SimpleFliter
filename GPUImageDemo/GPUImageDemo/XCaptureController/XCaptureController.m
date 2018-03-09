@@ -480,36 +480,42 @@ NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
     
     [self enableTorch:NO];
     self.recording = NO;
-    [[self.pipeline.filters lastObject] removeTarget:self.movieWriter];
-    [self.movieWriter finishRecording];
-    
-    if (self.didRecordCompletionBlock) {
-        self.didRecordCompletionBlock(self, self.outputUrl, nil);
-    }
+    [self.movieWriter finishRecordingWithCompletionHandler:^{
+        [[self.pipeline.filters lastObject] removeTarget:self.movieWriter];
+        self.videoCamera.audioEncodingTarget = nil;
+        NSLog(@"Movie completed");
+        if (self.didRecordCompletionBlock) {
+            self.didRecordCompletionBlock(self, self.outputUrl, nil);
+        }
+    }];
 }
 
 -(void)movieRecordingCompleted
 {
     [self enableTorch:NO];
     self.recording = NO;
-    [[self.pipeline.filters lastObject] removeTarget:self.movieWriter];
-    [self.movieWriter finishRecording];
-    
-    if (self.didRecordCompletionBlock) {
-        self.didRecordCompletionBlock(self, self.outputUrl, nil);
-    }
+    [self.movieWriter finishRecordingWithCompletionHandler:^{
+        [[self.pipeline.filters lastObject] removeTarget:self.movieWriter];
+        self.videoCamera.audioEncodingTarget = nil;
+        NSLog(@"Movie completed");
+        if (self.didRecordCompletionBlock) {
+            self.didRecordCompletionBlock(self, self.outputUrl, nil);
+        }
+    }];
 }
 
 -(void)movieRecordingFailedWithError:(NSError *)error
 {
     [self enableTorch:NO];
     self.recording = NO;
-    [[self.pipeline.filters lastObject] removeTarget:self.movieWriter];
-    [self.movieWriter finishRecording];
-    
-    if (self.didRecordCompletionBlock) {
-        self.didRecordCompletionBlock(self, self.outputUrl, error);
-    }
+    [self.movieWriter finishRecordingWithCompletionHandler:^{
+        [[self.pipeline.filters lastObject] removeTarget:self.movieWriter];
+        self.videoCamera.audioEncodingTarget = nil;
+        NSLog(@"Movie completed");
+        if (self.didRecordCompletionBlock) {
+            self.didRecordCompletionBlock(self, self.outputUrl, nil);
+        }
+    }];
 }
 
 
