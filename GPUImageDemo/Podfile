@@ -3,7 +3,7 @@ platform :ios, '8.0'
 inhibit_all_warnings!
 
 pod 'SCRecorder'
-
+pod 'GPUImage',:git => 'https://github.com/hiETsang/GPUImage.git'
 
 target 'GPUImageDemo' do
 end

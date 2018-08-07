@@ -132,7 +132,7 @@
     self.testImageView.image = self.currentImage;
 }
 
-#pragma mark - 点击操作
+#pragma mark - actions
 
 - (IBAction)previousButtonClick:(id)sender {
     if (self.index == 0) {
@@ -172,7 +172,12 @@
 }
 
 - (IBAction)nextPage:(id)sender {
+    __weak __typeof(self)weakSelf = self;
     TestViewController *vc = [[TestViewController alloc] init];
+    [vc setDidFinishCapture:^(UIImage *image) {
+        weakSelf.orginImage = image;
+        weakSelf.index = 0;
+    }];
     [self presentViewController:vc animated:YES completion:nil];
 }
 
@@ -180,6 +185,12 @@
     self.currentImage = [FWApplyFilter applyBeautifyFilter:self.currentImage];
      self.testImageView.image = self.currentImage;
 }
+
+
+
+
+
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

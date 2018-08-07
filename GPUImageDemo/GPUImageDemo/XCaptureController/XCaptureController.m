@@ -111,13 +111,13 @@ NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
     //聚焦
     self.tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(previewTapped:)];
     self.tapGesture.numberOfTapsRequired = 1;
-    self.tapGesture.delaysTouchesEnded = NO;//手势识别失败立即发送touchend结束触摸事件
+    self.tapGesture.delaysTouchesEnded = NO;
     [self.preview addGestureRecognizer:self.tapGesture];
     
     //缩放
-        self.pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(previewPinned:)];
-        self.pinchGesture.delegate = self;
-        [self.preview addGestureRecognizer:self.pinchGesture];
+    self.pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(previewPinned:)];
+    self.pinchGesture.delegate = self;
+    [self.preview addGestureRecognizer:self.pinchGesture];
     
     //添加聚焦动画
     [self addDefaultFocusBox];
@@ -136,7 +136,7 @@ NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
 {
     [XCaptureController requestCameraPermission:^(BOOL granted) {
         if (granted) {
-            //如果是视频录制，额外需要麦克风权限  没有麦克风权限的话就没有声音
+            //如果是视频录制，额外需要麦克风权限
             if (self.recordingEnabled) {
                 [XCaptureController requestMicrophonePermission:^(BOOL granted) {
                     if (granted) {
@@ -347,16 +347,16 @@ NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
     if (CGRectEqualToRect(self.detectionRect, CGRectZero)) {
         return image;
     }
-
+    
     float scaleWidth = image.extent.size.width/self.view.frame.size.width;
     float scaleHeight = image.extent.size.height/(self.view.frame.size.width * kScreenHeight/kScreenWidth);
-
+    
     CGRect newRect = CGRectZero;
     newRect.origin.x = self.detectionRect.origin.x * scaleWidth;
     newRect.origin.y = self.detectionRect.origin.y * scaleHeight;
     newRect.size.width = self.detectionRect.size.width * scaleWidth;
     newRect.size.height = self.detectionRect.size.height * scaleHeight;
-
+    
     CIContext *context = [CIContext contextWithOptions:nil];
     CGImageRef ref = [context createCGImage:image fromRect:newRect];
     CIImage *resultImage = [[CIImage alloc] initWithCGImage:ref];
@@ -613,10 +613,8 @@ NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
 - (void)showFocusBox:(CGPoint)point
 {
     if(self.focusBoxLayer) {
-        // clear animations
         [self.focusBoxLayer removeAllAnimations];
         
-        // move layer to the touch point
         [CATransaction begin];
         [CATransaction setValue: (id) kCFBooleanTrue forKey: kCATransactionDisableActions];
         self.focusBoxLayer.position = point;
@@ -624,7 +622,6 @@ NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
     }
     
     if(self.focusBoxAnimation) {
-        // run the animation
         [self.focusBoxLayer addAnimation:self.focusBoxAnimation forKey:@"animateOpacity"];
     }
 }
@@ -790,7 +787,6 @@ NSString *const XCameraErrorDomain = @"XCameraErrorDomain";
     if(self.useDeviceOrientation) {
         switch ([UIDevice currentDevice].orientation) {
             case UIDeviceOrientationLandscapeLeft:
-                // yes to the right, this is not bug!
                 videoOrientation = AVCaptureVideoOrientationLandscapeRight;
                 break;
             case UIDeviceOrientationLandscapeRight:

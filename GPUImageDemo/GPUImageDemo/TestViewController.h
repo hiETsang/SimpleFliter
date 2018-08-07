@@ -10,4 +10,7 @@
 
 @interface TestViewController : UIViewController
 
+/** 点击拍照 */
+@property (nonatomic,copy) void (^didFinishCapture)(UIImage *image);
+
 @end
