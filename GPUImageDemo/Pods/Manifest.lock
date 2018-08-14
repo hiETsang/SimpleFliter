@@ -1,12 +1,28 @@
 PODS:
+  - GPUImage (0.1.7)
   - SCRecorder (2.7.0)
 
 DEPENDENCIES:
+  - GPUImage (from `https://github.com/hiETsang/GPUImage.git`)
   - SCRecorder
 
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - SCRecorder
+
+EXTERNAL SOURCES:
+  GPUImage:
+    :git: https://github.com/hiETsang/GPUImage.git
+
+CHECKOUT OPTIONS:
+  GPUImage:
+    :commit: c7b065aebcd205a6614695f752e6b30ab87f0a60
+    :git: https://github.com/hiETsang/GPUImage.git
+
 SPEC CHECKSUMS:
+  GPUImage: bd7e201b9aa91e85f401ed7a6d9867a07a404693
   SCRecorder: bbb521dbc222908876ec9cd9156bbc8a893bed44
 
-PODFILE CHECKSUM: cf8baca0d77fd4603a59a084f1576069cf88dcd4
+PODFILE CHECKSUM: c0ab4444d7f28d6648979804329a000688bb05c2
 
-COCOAPODS: 1.3.1
+COCOAPODS: 1.5.3

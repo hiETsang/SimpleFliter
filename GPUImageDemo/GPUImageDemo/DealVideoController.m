@@ -74,6 +74,11 @@
     [self.player play];
 }
 
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+{
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
 -(void)dealloc
 {
     

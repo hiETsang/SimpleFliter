@@ -11,9 +11,9 @@
 #import "XCategoryHeader.h"
 #import "XMacros.h"
 
+//滤镜
 #import "FWNashvilleFilter.h"
 #import "FWLordKelvinFilter.h"
-//#import "GPUImageVibranceFilter.h"
 #import "FWAmaroFilter.h"
 #import "FWRiseFilter.h"
 #import "FWHudsonFilter.h"
@@ -56,8 +56,14 @@
     [self.capture start];
 }
 
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    [self.capture stop];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.view.backgroundColor = [UIColor blackColor];
     self.capture = [[XCaptureController alloc] initWithQuality:AVCaptureSessionPresetHigh position:XCapturePositionFront enableRecording:YES];
     [self.capture attachToViewController:self withFrame:self.view.bounds];
     //点击聚焦
@@ -75,14 +81,6 @@
 
 -(void)createUI
 {
-    //内存压力测试
-//                for (NSInteger i = 0 ; i< 3; i++) {
-//                    UIImage *image = [UIImage imageNamed:[NSString stringWithFormat:@"pic%ld.jpeg",(long)i]];
-//                    UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
-//                    imageView.frame = CGRectMake(0, 50, 50, 50);
-//                    [self.view addSubview:imageView];
-//                }
-    
     UIButton *flash = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.view addSubview:flash];
         flash.titleLabel.font = [UIFont systemFontOfSize:14];
@@ -122,26 +120,34 @@
     capture.layer.cornerRadius = 30;
     capture.frame = CGRectMake((KScreenWidth - 40)/2, KScreenHeight - 80, 60, 60);
     
-    //拍摄照片
-//    [self.capture capture:^(XCaptureController *camera, UIImage *image, NSError *error) {
-//
-//    }];
+    
     
     NSURL *outputURL = [[[self applicationDocumentsDirectory]
                          URLByAppendingPathComponent:@"output"] URLByAppendingPathExtension:@"mov"];
-    //录制10秒视频
+
     __weak __typeof(capture)weakCapture = capture;
     [capture addActionHandler:^(NSInteger tag) {
-        weakCapture.backgroundColor = [UIColor redColor];
-        [weakSelf.capture startRecordingWithOutputUrl:outputURL didRecord:^(XCaptureController *camera, NSURL *outputFileUrl, NSError *error) {
-//            [self saveVideoToAblumWithUrl:outputFileUrl];
-            DealVideoController *vc = [[DealVideoController alloc] initWithVideoUrl:outputURL];
-            [weakSelf presentViewController:vc animated:NO completion:nil];
+        
+        //拍摄照片
+        [weakSelf.capture capture:^(XCaptureController *camera, UIImage *image, NSError *error) {
+            if (weakSelf.didFinishCapture) {
+                weakSelf.didFinishCapture(image);
+            }
+            [weakSelf dismissViewControllerAnimated:YES completion:nil];
         }];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            weakCapture.backgroundColor = [UIColor whiteColor];
-            [weakSelf.capture stopRecording];
-        });
+        
+        //录制5秒视频
+//        weakCapture.backgroundColor = [UIColor redColor];
+//        weakCapture.enabled = NO;
+//        [weakSelf.capture startRecordingWithOutputUrl:outputURL didRecord:^(XCaptureController *camera, NSURL *outputFileUrl, NSError *error) {
+//            DealVideoController *vc = [[DealVideoController alloc] initWithVideoUrl:outputURL];
+//            [weakSelf presentViewController:vc animated:NO completion:nil];
+//        }];
+//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//            weakCapture.backgroundColor = [UIColor whiteColor];
+//            [weakSelf.capture stopRecording];
+//        weakCapture.enabled = YES;
+//        });
     }];
     
 
