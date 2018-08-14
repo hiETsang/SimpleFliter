@@ -1,5 +1,5 @@
 # SimpleFliter
-![image](https://github.com/hiETsang/SimpleFliter/blob/master/Image-2.gif)  ![image2](https://github.com/hiETsang/SimpleFliter/blob/master/Image.gif)
+![image](https://github.com/hiETsang/SimpleFliter/blob/master/image1.gif)  ![image2](https://github.com/hiETsang/SimpleFliter/blob/master/image2.gif)
 
 快速在项目中集成美颜和滤镜效果，两种磨皮美白滤镜以及多种其他风格滤镜，基于GPUImage的再次封装自定义相机功能，内部还包含了系统人脸识别功能。
 
@@ -15,7 +15,7 @@
 * 录制视频
 
 ## 使用
-![image](https://github.com/hiETsang/SimpleFliter/blob/master/FEBFD875-C6F4-4FEF-BDA0-9CECBB62807D.png)
+![image](https://github.com/hiETsang/SimpleFliter/blob/master/sample.png)
 * 滤镜包括两种美白磨皮的滤镜以及十余种instagram风格滤镜。
 * 相机使用
 ```javascript
